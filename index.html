@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="MahlzeitPlanner" />
+    <title>MahlzeitPlanner DE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              parchment: '#F5F0E8',
+              forest: {
+                50:  '#EBF5EF',
+                100: '#C9E7D6',
+                200: '#9DD2B6',
+                300: '#65B890',
+                400: '#37A06C',
+                500: '#1A5C38',
+                600: '#154B2D',
+                700: '#103A22',
+                800: '#0B2918',
+                900: '#071B10',
+              },
+              clay: {
+                50:  '#FAF7F2',
+                100: '#F3EDE3',
+                200: '#E8DFD0',
+                300: '#D8CBBA',
+                400: '#C0AE96',
+                500: '#A38E72',
+                600: '#806E55',
+                700: '#60523E',
+                800: '#403728',
+                900: '#221E14',
+              },
+            },
+            fontFamily: {
+              display: ['"Playfair Display"', 'Georgia', 'serif'],
+              sans:    ['"DM Sans"', 'system-ui', 'sans-serif'],
+            },
+            boxShadow: {
+              'card':       '0 1px 2px rgba(26,22,14,0.04), 0 4px 16px rgba(26,22,14,0.06)',
+              'card-hover': '0 4px 8px rgba(26,22,14,0.06), 0 16px 40px rgba(26,22,14,0.10)',
+              'modal':      '0 24px 80px rgba(0,0,0,0.18)',
+              'btn-forest': '0 2px 8px rgba(26,92,56,0.28)',
+            },
+            borderRadius: {
+              '4xl': '2rem',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body { font-family: 'DM Sans', system-ui, sans-serif; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.5.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+    "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

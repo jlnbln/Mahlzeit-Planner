@@ -1,0 +1,222 @@
+
+import React, { useState } from 'react';
+import { WeeklyPlan, Recipe, AppSettings } from '../types';
+import { RefreshCw, ShoppingCart, Download, GripVertical, Bookmark, Heart, Clock, Star } from 'lucide-react';
+
+interface PlanDetailProps {
+    plan: WeeklyPlan;
+    activeTabDay: string;
+    setActiveTabDay: (day: string) => void;
+    settings: AppSettings;
+    initiateGeneration: () => void;
+    handleGenerateShoppingList: () => void;
+    handleExportICal: () => void;
+    openReplaceModal: (d: number, t: string, n: string) => void;
+    openFavoriteReplaceModal: (d: number, t: string, n: string) => void;
+    setSelectedRecipe: (r: Recipe) => void;
+    onPlanUpdate: (p: WeeklyPlan) => void;
+}
+
+const formatDateGerman = (isoDate: string) =>
+    new Date(isoDate).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+const mealTypeColor: Record<string, string> = {
+    'Frühstück':   'meal-pill-breakfast',
+    'Mittagessen': 'meal-pill-lunch',
+    'Abendessen':  'meal-pill-dinner',
+};
+
+const PlanDetail: React.FC<PlanDetailProps> = ({
+    plan, activeTabDay, setActiveTabDay, settings,
+    initiateGeneration, handleGenerateShoppingList, handleExportICal,
+    openReplaceModal, openFavoriteReplaceModal, setSelectedRecipe, onPlanUpdate
+}) => {
+    const [draggedItem, setDraggedItem] = useState<{ dayIndex: number; mealIndex: number; type: string } | null>(null);
+
+    const handleDragStart = (e: React.DragEvent, dayIndex: number, mealIndex: number, type: string) => {
+        setDraggedItem({ dayIndex, mealIndex, type });
+        e.dataTransfer.effectAllowed = 'move';
+    };
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    };
+    const handleDrop = (e: React.DragEvent, targetDayIndex: number, targetMealIndex: number) => {
+        e.preventDefault();
+        if (!draggedItem) return;
+        if (draggedItem.dayIndex === targetDayIndex && draggedItem.mealIndex === targetMealIndex) return;
+        const planToUpdate = { ...plan };
+        planToUpdate.days = planToUpdate.days.map(d => ({ ...d, meals: d.meals.map(m => ({ ...m })) }));
+        const sourceMeal = planToUpdate.days[draggedItem.dayIndex].meals[draggedItem.mealIndex];
+        const targetMeal = planToUpdate.days[targetDayIndex].meals[targetMealIndex];
+        const tempRecipe = sourceMeal.recipe;
+        sourceMeal.recipe = targetMeal.recipe;
+        targetMeal.recipe = tempRecipe;
+        onPlanUpdate(planToUpdate);
+        setDraggedItem(null);
+    };
+
+    const activeDay = plan.days.find(d => d.day === activeTabDay);
+
+    return (
+        <div className="space-y-5 animate-fade-in">
+
+            {/* ── Action bar ────────────────────────────────── */}
+            <div className="card p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h2 className="section-title text-xl">Wochenplan</h2>
+                        <p className="text-sm text-[#6E6A60] dark:text-[#9A9690] mt-0.5">
+                            Woche vom {formatDateGerman(plan.startDate)}
+                        </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        <button
+                            onClick={initiateGeneration}
+                            className="btn-secondary text-sm py-2 px-3 gap-2"
+                        >
+                            <RefreshCw size={14} /> Neu erstellen
+                        </button>
+                        <button
+                            onClick={handleGenerateShoppingList}
+                            className="btn-ghost text-sm py-2 px-3 gap-2"
+                        >
+                            <ShoppingCart size={14} /> Einkaufsliste
+                        </button>
+                        <button
+                            onClick={handleExportICal}
+                            className="btn-ghost text-sm py-2 px-3 gap-2"
+                            title="Als .ics exportieren"
+                        >
+                            <Download size={14} /> iCal
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* ── Day tabs ──────────────────────────────────── */}
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+                {plan.days.map(day => (
+                    <button
+                        key={day.day}
+                        onClick={() => setActiveTabDay(day.day)}
+                        className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all duration-150 shrink-0
+                            ${activeTabDay === day.day
+                                ? 'bg-forest-500 text-white dark:bg-[#4FC475] dark:text-[#071B10] shadow-btn-forest'
+                                : 'bg-white dark:bg-[#1C231A] text-[#6E6A60] dark:text-[#9A9690] border border-clay-200 dark:border-[#2A3427] hover:bg-clay-50 dark:hover:bg-[#232B1F]'
+                            }`}
+                    >
+                        {day.day}
+                    </button>
+                ))}
+            </div>
+
+            {/* ── Active day ────────────────────────────────── */}
+            {activeDay && (
+                <div className="card p-5 sm:p-6 animate-slide-up">
+                    <h3 className="font-display text-xl font-bold text-[#1C1A16] dark:text-[#F0EDE5] mb-5 flex items-center gap-3">
+                        <span className="w-1 h-7 bg-forest-500 dark:bg-[#4FC475] rounded-full" />
+                        {activeDay.day}
+                    </h3>
+
+                    {activeDay.meals.length === 0 ? (
+                        <div className="py-10 flex flex-col items-center border-2 border-dashed border-clay-200 dark:border-[#2A3427] rounded-xl">
+                            <p className="text-[#A38E72] dark:text-[#6B6762] italic text-sm">
+                                Keine Mahlzeiten geplant.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {activeDay.meals.map((meal, mIdx) => {
+                                const globalDayIndex = plan.days.indexOf(activeDay);
+                                const pillClass = mealTypeColor[meal.type] || 'meal-pill-dinner';
+
+                                return (
+                                    <div
+                                        key={mIdx}
+                                        draggable
+                                        onDragStart={(e) => handleDragStart(e, globalDayIndex, mIdx, meal.type)}
+                                        onDragOver={handleDragOver}
+                                        onDrop={(e) => handleDrop(e, globalDayIndex, mIdx)}
+                                        className="group relative flex items-start gap-3 p-3 rounded-xl border border-transparent hover:border-clay-200 dark:hover:border-[#2A3427] hover:bg-clay-50/50 dark:hover:bg-[#232B1F]/50 transition-all"
+                                    >
+                                        {/* Drag handle */}
+                                        <div className="drag-handle mt-1 opacity-0 group-hover:opacity-100 transition-opacity text-clay-300 dark:text-[#3A4635]">
+                                            <GripVertical size={16} />
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            {/* Meal type + actions */}
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${pillClass}`}>
+                                                    {meal.type}
+                                                </span>
+                                                <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={() => openFavoriteReplaceModal(globalDayIndex, meal.type, meal.recipe.name)}
+                                                        className="p-1.5 rounded-lg bg-white dark:bg-[#1C231A] border border-clay-200 dark:border-[#2A3427] text-[#A38E72] hover:text-amber-600 dark:hover:text-amber-400 transition-colors shadow-sm"
+                                                        title="Durch Favorit ersetzen"
+                                                    >
+                                                        <Bookmark size={13} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => openReplaceModal(globalDayIndex, meal.type, meal.recipe.name)}
+                                                        className="p-1.5 rounded-lg bg-white dark:bg-[#1C231A] border border-clay-200 dark:border-[#2A3427] text-[#A38E72] hover:text-forest-500 dark:hover:text-[#4FC475] transition-colors shadow-sm"
+                                                        title="KI-Alternative"
+                                                    >
+                                                        <RefreshCw size={13} />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Recipe info */}
+                                            <button
+                                                onClick={() => setSelectedRecipe(meal.recipe)}
+                                                className="w-full text-left"
+                                            >
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <h4 className="font-semibold text-[#1C1A16] dark:text-[#F0EDE5] hover:text-forest-600 dark:hover:text-[#4FC475] transition-colors leading-snug">
+                                                        {meal.recipe.name}
+                                                    </h4>
+                                                    {meal.recipe.isFavorite && (
+                                                        <Heart size={14} className="shrink-0 mt-0.5 fill-red-400 text-red-400" />
+                                                    )}
+                                                </div>
+
+                                                <div className="flex flex-wrap gap-1.5 mt-2">
+                                                    <span className="tag-chip">
+                                                        {meal.recipe.calories} kcal
+                                                    </span>
+                                                    <span className="tag-chip">
+                                                        <Clock size={11} className="mr-0.5" />
+                                                        {meal.recipe.cookingTime || 30}m
+                                                    </span>
+                                                    {meal.recipe.rating && meal.recipe.rating > 0 && (
+                                                        <span className="tag-chip tag-chip-amber">
+                                                            <Star size={11} className="mr-0.5 fill-current" />
+                                                            {meal.recipe.rating}
+                                                        </span>
+                                                    )}
+                                                    {meal.recipe.tags.slice(0, 3).map(tag => (
+                                                        <span
+                                                            key={tag}
+                                                            className={`tag-chip ${tag.toLowerCase() === 'thermomix' ? 'tag-chip-purple' : ''}`}
+                                                        >
+                                                            {tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default PlanDetail;

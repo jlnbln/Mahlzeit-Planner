@@ -1,0 +1,5 @@
+{
+  "name": "MahlzeitPlanner DE",
+  "description": "A personalized weekly food plan app for German households powered by Gemini AI. Features meal planning, shopping lists, and iCal export.",
+  "requestFramePermissions": []
+}
