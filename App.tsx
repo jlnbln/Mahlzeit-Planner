@@ -379,9 +379,11 @@ function App() {
             onClick={handleGoToDashboard}
             className="flex items-center gap-2.5 group"
           >
-            <div className="w-8 h-8 rounded-xl bg-forest-500 dark:bg-[#4FC475] flex items-center justify-center shadow-btn-forest">
-              <ChefHat className="h-4.5 w-4.5 text-white dark:text-[#071B10]" size={18} />
-            </div>
+            <img
+              src="/mahlzeitplanner-logo.png"
+              alt="MahlzeitPlanner"
+              className="h-8 w-8 object-contain rounded-xl"
+            />
             <span className="font-display font-bold text-lg text-[#1C1A16] dark:text-[#F0EDE5] hidden sm:block">
               MahlzeitPlanner
             </span>
@@ -540,6 +542,8 @@ function App() {
                 initiateGeneration={() => setShowGenModal(true)}
                 handleGenerateShoppingList={handleGenerateShoppingList}
                 handleExportICal={async () => {
+                    setLoading(true);
+                    setLoadingMessage('iCal wird erstellt...');
                     try {
                         const ics = await generateICalString(activePlan);
                         const blob = new Blob([ics], { type: 'text/calendar' });
@@ -548,6 +552,7 @@ function App() {
                         a.download = `mahlzeit_plan_${activePlan.startDate}.ics`;
                         a.click();
                     } catch(e) { alert("Fehler beim Export"); }
+                    finally { setLoading(false); setLoadingMessage(''); }
                 }}
                 openReplaceModal={async (d, t, n) => {
                     setReplacementTarget({ dayIndex: d, mealType: t, currentName: n });

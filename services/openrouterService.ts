@@ -34,7 +34,9 @@ async function callOpenRouter(systemPrompt: string, userPrompt: string): Promise
     }
 
     const data = await response.json();
-    return data.choices[0].message.content;
+    const content: string = data.choices[0].message.content;
+    // Strip markdown code fences if the model wraps the JSON in ```json ... ```
+    return content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
 }
 
 async function callOpenRouterRaw(systemPrompt: string, userPrompt: string): Promise<string> {
@@ -183,7 +185,17 @@ Return a JSON object with this exact structure:
     const prompt = `
 Based on the following weekly meal plan, generate a consolidated shopping list.
 Merge identical ingredients.
-Categorize them strictly into German grocery categories (e.g. "Obst & Gemüse", "Kühlprodukte", "Milchprodukte", "Fleisch/Alternativen", "Trockene Lebensmittel", "Gewürze & Grundzutaten", "Getränke", "Tiefkühlware", "Sonstiges").
+Categorize them strictly into German grocery categories using EXACTLY these category names in this order (the order of a typical German supermarket layout):
+1. "Obst & Gemüse"
+2. "Backwaren & Brot"
+3. "Molkereiprodukte & Kühlregal"
+4. "Fleisch, Wurst & Fisch"
+5. "Trockensortiment & Vorrat"
+6. "Getränke & Snacks"
+7. "Drogerie & Haushalt"
+8. "Tiefkühlkost"
+
+CRITICAL: The "items" array in the response MUST be sorted so that all items of category 1 come first, then all items of category 2, and so on — matching the supermarket aisle order listed above.
 Estimate the total price in Euro based on prices at ${storeName} in Germany.
 
 Plan JSON:
