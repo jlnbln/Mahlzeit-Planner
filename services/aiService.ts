@@ -11,3 +11,5 @@ export const generateWeeklyPlan = service.generateWeeklyPlan;
 export const generateShoppingList = service.generateShoppingList;
 export const generateAlternativeRecipes = service.generateAlternativeRecipes;
 export const generateICalString = service.generateICalString;
+// Always uses OpenRouter with the cheap import model, regardless of provider setting
+export { importRecipeFromSource } from './openrouterService';

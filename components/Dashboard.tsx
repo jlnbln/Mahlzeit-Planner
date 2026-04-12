@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { WeeklyPlan, Recipe, AppSettings } from '../types';
-import { ChevronLeft, ChevronRight, Plus, Coffee, Sun, Moon, RotateCcw, Heart, Circle, CheckCircle2, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Coffee, Sun, Moon, RotateCcw, Heart, Circle, CheckCircle2, Sparkles, Package } from 'lucide-react';
 import { DAYS_OF_WEEK } from '../constants';
 
 interface DashboardProps {
@@ -11,6 +11,7 @@ interface DashboardProps {
     toggleViewDate: (dir: 'prev' | 'next') => void;
     goToCurrentWeek: () => void;
     initiateGeneration: (date?: Date) => void;
+    onCreateManually: () => void;
     setView: (view: any) => void;
     setActiveTabDay: (day: string) => void;
     getWeekRangeString: (iso: string) => string;
@@ -23,16 +24,21 @@ const mealMeta: Record<string, { icon: React.ReactNode; pillClass: string; label
     'Frühstück':   { icon: <Coffee size={13} />,  pillClass: 'meal-pill-breakfast', label: 'Frühstück' },
     'Mittagessen': { icon: <Sun size={13} />,     pillClass: 'meal-pill-lunch',     label: 'Mittag' },
     'Abendessen':  { icon: <Moon size={13} />,    pillClass: 'meal-pill-dinner',    label: 'Abend' },
+    'Reste':       { icon: <Package size={13} />, pillClass: 'meal-pill-reste',     label: 'Reste' },
 };
 
 const Dashboard: React.FC<DashboardProps> = ({
     activePlan, currentViewDate, currentViewDateIso, toggleViewDate, goToCurrentWeek,
-    initiateGeneration, setView, setActiveTabDay, getWeekRangeString,
+    initiateGeneration, onCreateManually, setView, setActiveTabDay, getWeekRangeString,
     onSelectRecipe, onToggleMealCompletion, settings
 }) => {
     const today = new Date();
     today.setHours(0,0,0,0);
-    const isCurrentWeek = Math.abs(today.getTime() - new Date(currentViewDateIso).getTime()) < 604800000 / 2;
+    const [wy, wm, wd] = currentViewDateIso.split('-').map(Number);
+    const weekStartLocal = new Date(wy, wm - 1, wd);
+    const weekEndLocal = new Date(weekStartLocal);
+    weekEndLocal.setDate(weekEndLocal.getDate() + 7);
+    const isCurrentWeek = today >= weekStartLocal && today < weekEndLocal;
 
     const displayDays: { name: string; offset: number }[] = [];
     let startIndex = DAYS_OF_WEEK.indexOf(settings.weekStartDay);
@@ -119,13 +125,22 @@ const Dashboard: React.FC<DashboardProps> = ({
                     )}
 
                     {!activePlan && (
-                        <button
-                            onClick={() => initiateGeneration(currentViewDate)}
-                            className="btn-primary gap-2"
-                        >
-                            <Sparkles size={16} />
-                            Plan erstellen
-                        </button>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={onCreateManually}
+                                className="btn-ghost gap-2 text-sm"
+                            >
+                                <Plus size={15} />
+                                Plan erstellen
+                            </button>
+                            <button
+                                onClick={() => initiateGeneration(currentViewDate)}
+                                className="btn-primary gap-2"
+                            >
+                                <Sparkles size={16} />
+                                Plan generieren
+                            </button>
+                        </div>
                     )}
 
                     {activePlan && (
@@ -152,13 +167,22 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <p className="text-sm text-[#6E6A60] dark:text-[#9A9690] max-w-xs mb-6">
                         Erstelle deinen KI-generierten Wochenplan für diese Woche.
                     </p>
-                    <button
-                        onClick={() => initiateGeneration(currentViewDate)}
-                        className="btn-primary gap-2"
-                    >
-                        <Plus size={16} />
-                        Plan erstellen
-                    </button>
+                    <div className="flex gap-3 flex-wrap justify-center">
+                        <button
+                            onClick={onCreateManually}
+                            className="btn-ghost gap-2"
+                        >
+                            <Plus size={16} />
+                            Plan erstellen
+                        </button>
+                        <button
+                            onClick={() => initiateGeneration(currentViewDate)}
+                            className="btn-primary gap-2"
+                        >
+                            <Sparkles size={16} />
+                            Plan generieren
+                        </button>
+                    </div>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -198,7 +222,10 @@ const Dashboard: React.FC<DashboardProps> = ({
 
                                 {hasMeals ? (
                                     <div className="flex-1 space-y-1.5">
-                                        {dayData!.meals.map((m, mIdx) => {
+                                        {[...dayData!.meals].sort((a, b) => {
+                                            const order: Record<string, number> = { 'Frühstück': 0, 'Mittagessen': 1, 'Abendessen': 2, 'Reste': 3 };
+                                            return (order[a.type] ?? 99) - (order[b.type] ?? 99);
+                                        }).map((m, mIdx) => {
                                             const meta = mealMeta[m.type] || mealMeta['Abendessen'];
                                             return (
                                                 <div
@@ -229,6 +256,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                                                                 : 'text-[#1C1A16] dark:text-[#F0EDE5] group-hover:text-forest-600 dark:group-hover:text-[#4FC475]'
                                                             }`}
                                                     >
+                                                        {m.isLeftover && (
+                                                            <span className="text-[#6B4A8A] dark:text-[#C0A0E0] font-normal not-italic">Reste: </span>
+                                                        )}
                                                         {m.recipe.name}
                                                         {m.recipe.isFavorite && (
                                                             <Heart size={10} className="inline ml-1 fill-red-400 text-red-400" />

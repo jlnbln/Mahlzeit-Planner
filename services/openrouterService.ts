@@ -249,6 +249,58 @@ ${schemaDescription}`;
     }
 };
 
+const IMPORT_MODEL = 'google/gemini-2.5-flash-lite';
+
+export const importRecipeFromSource = async (
+    type: 'text' | 'image',
+    content: string,
+    mimeType?: string
+): Promise<Partial<Recipe>> => {
+    const prompt = `Extrahiere das Rezept aus dem folgenden Inhalt und gib es als JSON zurück.
+Gib JSON mit exakt dieser Struktur zurück (alle Texte auf Deutsch, fehlende Werte sinnvoll schätzen):
+{
+  "name": string,
+  "ingredients": [{ "name": string, "amount": number, "unit": string }],
+  "instructions": string[],
+  "calories": number,
+  "cookingTime": number,
+  "tags": string[]
+}`;
+
+    const messages = type === 'image'
+        ? [{ role: 'user', content: [
+              { type: 'text', text: prompt },
+              { type: 'image_url', image_url: { url: `data:${mimeType};base64,${content}` } }
+          ]}]
+        : [
+              { role: 'system', content: 'Du bist ein Rezept-Extraktor. Antworte nur mit validem JSON.' },
+              { role: 'user', content: `${prompt}\n\nInhalt:\n${content.substring(0, 8000)}` }
+          ];
+
+    const response = await fetch(`${BASE_URL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${getApiKey()}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            model: IMPORT_MODEL,
+            messages,
+            response_format: { type: 'json_object' },
+        })
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Fehler beim Importieren (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    const raw: string = data.choices[0].message.content;
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+    return JSON.parse(cleaned) as Partial<Recipe>;
+};
+
 export const generateICalString = async (plan: WeeklyPlan): Promise<string> => {
     const prompt = `
 Convert the following weekly meal plan into a standard valid iCalendar (.ics) format string.

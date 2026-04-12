@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { WeeklyPlan, Recipe, AppSettings } from '../types';
-import { RefreshCw, ShoppingCart, Download, GripVertical, Bookmark, Heart, Clock, Star } from 'lucide-react';
+import { RefreshCw, ShoppingCart, Download, GripVertical, Bookmark, Heart, Clock, Star, Plus, Trash2 } from 'lucide-react';
 
 interface PlanDetailProps {
     plan: WeeklyPlan;
@@ -15,6 +15,8 @@ interface PlanDetailProps {
     openFavoriteReplaceModal: (d: number, t: string, n: string) => void;
     setSelectedRecipe: (r: Recipe) => void;
     onPlanUpdate: (p: WeeklyPlan) => void;
+    onAddMealClick: (dayIndex: number) => void;
+    onDeleteMeal: (dayIndex: number, mealIndex: number) => void;
 }
 
 const formatDateGerman = (isoDate: string) =>
@@ -24,12 +26,17 @@ const mealTypeColor: Record<string, string> = {
     'Frühstück':   'meal-pill-breakfast',
     'Mittagessen': 'meal-pill-lunch',
     'Abendessen':  'meal-pill-dinner',
+    'Reste':       'meal-pill-reste',
+};
+
+const MEAL_ORDER: Record<string, number> = {
+    'Frühstück': 0, 'Mittagessen': 1, 'Abendessen': 2, 'Reste': 3,
 };
 
 const PlanDetail: React.FC<PlanDetailProps> = ({
     plan, activeTabDay, setActiveTabDay, settings,
     initiateGeneration, handleGenerateShoppingList, handleExportICal,
-    openReplaceModal, openFavoriteReplaceModal, setSelectedRecipe, onPlanUpdate
+    openReplaceModal, openFavoriteReplaceModal, setSelectedRecipe, onPlanUpdate, onAddMealClick, onDeleteMeal
 }) => {
     const [draggedItem, setDraggedItem] = useState<{ dayIndex: number; mealIndex: number; type: string } | null>(null);
 
@@ -121,23 +128,32 @@ const PlanDetail: React.FC<PlanDetailProps> = ({
 
                     {activeDay.meals.length === 0 ? (
                         <div className="py-10 flex flex-col items-center border-2 border-dashed border-clay-200 dark:border-[#2A3427] rounded-xl">
-                            <p className="text-[#A38E72] dark:text-[#6B6762] italic text-sm">
+                            <p className="text-[#A38E72] dark:text-[#6B6762] italic text-sm mb-4">
                                 Keine Mahlzeiten geplant.
                             </p>
+                            <button
+                                onClick={() => onAddMealClick(plan.days.indexOf(activeDay))}
+                                className="btn-secondary text-sm py-2 px-4 gap-2"
+                            >
+                                <Plus size={15} /> Mahlzeit hinzufügen
+                            </button>
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            {activeDay.meals.map((meal, mIdx) => {
+                            {[...activeDay.meals]
+                                .sort((a, b) => (MEAL_ORDER[a.type] ?? 99) - (MEAL_ORDER[b.type] ?? 99))
+                                .map((meal) => {
                                 const globalDayIndex = plan.days.indexOf(activeDay);
+                                const originalIndex = activeDay.meals.indexOf(meal);
                                 const pillClass = mealTypeColor[meal.type] || 'meal-pill-dinner';
 
                                 return (
                                     <div
-                                        key={mIdx}
+                                        key={originalIndex}
                                         draggable
-                                        onDragStart={(e) => handleDragStart(e, globalDayIndex, mIdx, meal.type)}
+                                        onDragStart={(e) => handleDragStart(e, globalDayIndex, originalIndex, meal.type)}
                                         onDragOver={handleDragOver}
-                                        onDrop={(e) => handleDrop(e, globalDayIndex, mIdx)}
+                                        onDrop={(e) => handleDrop(e, globalDayIndex, originalIndex)}
                                         className="group relative flex items-start gap-3 p-3 rounded-xl border border-transparent hover:border-clay-200 dark:hover:border-[#2A3427] hover:bg-clay-50/50 dark:hover:bg-[#232B1F]/50 transition-all"
                                     >
                                         {/* Drag handle */}
@@ -166,6 +182,13 @@ const PlanDetail: React.FC<PlanDetailProps> = ({
                                                     >
                                                         <RefreshCw size={13} />
                                                     </button>
+                                                    <button
+                                                        onClick={() => onDeleteMeal(globalDayIndex, originalIndex)}
+                                                        className="p-1.5 rounded-lg bg-white dark:bg-[#1C231A] border border-clay-200 dark:border-[#2A3427] text-[#A38E72] hover:text-red-500 dark:hover:text-red-400 transition-colors shadow-sm"
+                                                        title="Mahlzeit entfernen"
+                                                    >
+                                                        <Trash2 size={13} />
+                                                    </button>
                                                 </div>
                                             </div>
 
@@ -176,6 +199,9 @@ const PlanDetail: React.FC<PlanDetailProps> = ({
                                             >
                                                 <div className="flex items-start justify-between gap-2">
                                                     <h4 className="font-semibold text-[#1C1A16] dark:text-[#F0EDE5] hover:text-forest-600 dark:hover:text-[#4FC475] transition-colors leading-snug">
+                                                        {meal.isLeftover && (
+                                                            <span className="text-[#6B4A8A] dark:text-[#C0A0E0] font-normal">Reste: </span>
+                                                        )}
                                                         {meal.recipe.name}
                                                     </h4>
                                                     {meal.recipe.isFavorite && (
@@ -211,6 +237,12 @@ const PlanDetail: React.FC<PlanDetailProps> = ({
                                     </div>
                                 );
                             })}
+                            <button
+                                onClick={() => onAddMealClick(plan.days.indexOf(activeDay))}
+                                className="btn-secondary w-full text-sm py-2.5 gap-2 mt-1"
+                            >
+                                <Plus size={15} /> Mahlzeit hinzufügen
+                            </button>
                         </div>
                     )}
                 </div>

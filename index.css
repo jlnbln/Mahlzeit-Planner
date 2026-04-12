@@ -160,9 +160,11 @@ body {
 .meal-pill-breakfast { background: #FEF3E6; color: #9C5A1A; }
 .meal-pill-lunch     { background: #EDF6F1; color: #1A6640; }
 .meal-pill-dinner    { background: #EEF0F8; color: #3A4580; }
+.meal-pill-reste     { background: #F5F0F8; color: #6B4A8A; }
 .dark .meal-pill-breakfast { background: rgba(210,130,40,0.14); color: #E0A060; }
 .dark .meal-pill-lunch     { background: rgba(79,196,117,0.12); color: #6DD49A; }
 .dark .meal-pill-dinner    { background: rgba(100,120,220,0.14); color: #9AAAE0; }
+.dark .meal-pill-reste     { background: rgba(160,100,220,0.14); color: #C0A0E0; }
 
 /* ─── Star rating ───────────────────────────────────────────────── */
 .star-btn { transition: transform 0.12s; cursor: pointer; }

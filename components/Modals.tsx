@@ -5,8 +5,10 @@ import { DAYS_OF_WEEK } from '../constants';
 import {
     X, Trash2, Plus, ArrowRight, Calendar, Check,
     Clock, Heart, Star, ShoppingCart, ChefHat,
-    AlertTriangle, ChevronLeft, Bookmark
+    AlertTriangle, ChevronLeft, Bookmark, Upload,
+    Link, FileText, Image, Loader2, Coffee, Sun, Moon, Sparkles, Package
 } from 'lucide-react';
+import { importRecipeFromSource } from '../services/aiService';
 
 // ─── Star Rating ──────────────────────────────────────────────────
 
@@ -399,53 +401,172 @@ export const GenerationModal = ({
 
 // ─── REPLACEMENT MODAL ────────────────────────────────────────────
 
+const ADD_MEAL_TYPES = ['Frühstück', 'Mittagessen', 'Abendessen', 'Reste'];
+
 export const ReplacementModal = ({
-    candidates, targetName, onSelect, onClose
+    candidates, targetName, onSelect, onClose,
+    isAddMode, planDays, initialDayName, onAdd
 }: {
     candidates: Recipe[];
     targetName: string;
     onSelect: (r: Recipe) => void;
     onClose: () => void;
-}) => (
-    <ModalShell onClose={onClose} maxWidth="max-w-3xl">
-        <ModalHeader title="Alternative wählen" sub={`Ersetzt: ${targetName}`} onClose={onClose} />
+    isAddMode?: boolean;
+    planDays?: string[];
+    initialDayName?: string;
+    onAdd?: (recipe: Recipe, dayName: string, mealType: string) => void;
+}) => {
+    const [targetDay, setTargetDay] = useState(initialDayName || planDays?.[0] || '');
+    const [targetMealType, setTargetMealType] = useState(targetName || 'Abendessen');
+    const [addedSet, setAddedSet] = useState<Set<string>>(new Set());
 
-        <div className="flex-1 overflow-y-auto p-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {candidates.map((recipe, idx) => (
-                    <button
-                        key={idx}
-                        onClick={() => onSelect(recipe)}
-                        className="text-left p-4 rounded-xl border border-clay-200 dark:border-[#2A3427] hover:border-forest-400 dark:hover:border-[#4FC475] hover:bg-forest-50 dark:hover:bg-[rgba(79,196,117,0.06)] transition-all group"
-                    >
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                            <h4 className="font-semibold text-[#1C1A16] dark:text-[#F0EDE5] leading-snug group-hover:text-forest-700 dark:group-hover:text-[#4FC475] transition-colors">
-                                {recipe.name}
-                            </h4>
-                            <div className="shrink-0 w-6 h-6 rounded-full bg-forest-50 dark:bg-[rgba(79,196,117,0.12)] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                                <Check size={12} className="text-forest-500 dark:text-[#4FC475]" />
-                            </div>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5 mb-2">
-                            <span className="tag-chip">{recipe.calories} kcal</span>
-                            <span className="tag-chip"><Clock size={11} className="mr-0.5" />{recipe.cookingTime || 30}m</span>
-                            {recipe.tags.slice(0,2).map(t => (
-                                <span key={t} className={`tag-chip ${t.toLowerCase() === 'thermomix' ? 'tag-chip-purple' : ''}`}>{t}</span>
+    const handleAdd = (recipe: Recipe) => {
+        if (onAdd) {
+            onAdd(recipe, targetDay, targetMealType);
+            setAddedSet(prev => new Set(prev).add(recipe.name));
+        }
+    };
+
+    if (isAddMode) {
+        return (
+            <ModalShell onClose={onClose} maxWidth="max-w-3xl">
+                <ModalHeader title="Mahlzeiten hinzufügen" sub="Wähle Rezepte und weise sie Tagen zu" onClose={onClose} />
+
+                {/* Day + meal type selector */}
+                <div className="px-5 pt-4 pb-3 border-b border-clay-100 dark:border-[#2A3427] space-y-3">
+                    <div>
+                        <p className="text-xs font-semibold text-[#A38E72] dark:text-[#6B6762] uppercase tracking-wide mb-1.5">Tag</p>
+                        <div className="flex gap-1.5 flex-wrap">
+                            {(planDays || []).map(day => (
+                                <button
+                                    key={day}
+                                    onClick={() => setTargetDay(day)}
+                                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-all
+                                        ${targetDay === day
+                                            ? 'bg-forest-500 dark:bg-[#4FC475] text-white dark:text-[#071B10] border-forest-500 dark:border-[#4FC475]'
+                                            : 'bg-white dark:bg-[#1C231A] text-[#6E6A60] dark:text-[#9A9690] border-clay-200 dark:border-[#2A3427] hover:border-forest-400'
+                                        }`}
+                                >
+                                    {day}
+                                </button>
                             ))}
                         </div>
-                        <p className="text-xs text-[#A38E72] dark:text-[#6B6762] line-clamp-2">
-                            {recipe.ingredients.map(i => i.name).join(', ')}
-                        </p>
-                    </button>
-                ))}
-            </div>
-        </div>
+                    </div>
+                    <div>
+                        <p className="text-xs font-semibold text-[#A38E72] dark:text-[#6B6762] uppercase tracking-wide mb-1.5">Mahlzeit</p>
+                        <div className="flex gap-1.5 flex-wrap">
+                            {ADD_MEAL_TYPES.map(mt => (
+                                <button
+                                    key={mt}
+                                    onClick={() => setTargetMealType(mt)}
+                                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-all
+                                        ${targetMealType === mt
+                                            ? 'bg-forest-500 dark:bg-[#4FC475] text-white dark:text-[#071B10] border-forest-500 dark:border-[#4FC475]'
+                                            : 'bg-white dark:bg-[#1C231A] text-[#6E6A60] dark:text-[#9A9690] border-clay-200 dark:border-[#2A3427] hover:border-forest-400'
+                                        }`}
+                                >
+                                    {mt}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
 
-        <div className="px-5 py-4 border-t border-clay-100 dark:border-[#2A3427] shrink-0">
-            <button onClick={onClose} className="btn-ghost w-full">Abbrechen</button>
-        </div>
-    </ModalShell>
-);
+                <div className="flex-1 overflow-y-auto p-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {candidates.map((recipe, idx) => {
+                            const isAdded = addedSet.has(recipe.name);
+                            return (
+                                <div
+                                    key={idx}
+                                    className={`relative p-4 rounded-xl border transition-all
+                                        ${isAdded
+                                            ? 'border-forest-400 dark:border-[#4FC475] bg-forest-50 dark:bg-[rgba(79,196,117,0.06)]'
+                                            : 'border-clay-200 dark:border-[#2A3427]'
+                                        }`}
+                                >
+                                    <div className="flex items-start justify-between gap-2 mb-2">
+                                        <h4 className="font-semibold text-[#1C1A16] dark:text-[#F0EDE5] leading-snug flex-1">
+                                            {recipe.name}
+                                        </h4>
+                                        {isAdded ? (
+                                            <span className="shrink-0 flex items-center gap-1 text-xs font-semibold text-forest-600 dark:text-[#4FC475]">
+                                                <Check size={13} /> Hinzugefügt
+                                            </span>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleAdd(recipe)}
+                                                disabled={!targetDay}
+                                                className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-forest-500 dark:bg-[#4FC475] text-white dark:text-[#071B10] text-xs font-semibold hover:bg-forest-600 dark:hover:bg-[#3AB560] transition-colors disabled:opacity-40"
+                                            >
+                                                <Plus size={12} /> Hinzufügen
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-wrap gap-1.5 mb-2">
+                                        <span className="tag-chip">{recipe.calories} kcal</span>
+                                        <span className="tag-chip"><Clock size={11} className="mr-0.5" />{recipe.cookingTime || 30}m</span>
+                                        {recipe.tags.slice(0,2).map(t => (
+                                            <span key={t} className={`tag-chip ${t.toLowerCase() === 'thermomix' ? 'tag-chip-purple' : ''}`}>{t}</span>
+                                        ))}
+                                    </div>
+                                    <p className="text-xs text-[#A38E72] dark:text-[#6B6762] line-clamp-2">
+                                        {recipe.ingredients.map(i => i.name).join(', ')}
+                                    </p>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <div className="px-5 py-4 border-t border-clay-100 dark:border-[#2A3427] shrink-0">
+                    <button onClick={onClose} className="btn-primary w-full">Fertig</button>
+                </div>
+            </ModalShell>
+        );
+    }
+
+    return (
+        <ModalShell onClose={onClose} maxWidth="max-w-3xl">
+            <ModalHeader title="Alternative wählen" sub={`Ersetzt: ${targetName}`} onClose={onClose} />
+
+            <div className="flex-1 overflow-y-auto p-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {candidates.map((recipe, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => onSelect(recipe)}
+                            className="text-left p-4 rounded-xl border border-clay-200 dark:border-[#2A3427] hover:border-forest-400 dark:hover:border-[#4FC475] hover:bg-forest-50 dark:hover:bg-[rgba(79,196,117,0.06)] transition-all group"
+                        >
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                                <h4 className="font-semibold text-[#1C1A16] dark:text-[#F0EDE5] leading-snug group-hover:text-forest-700 dark:group-hover:text-[#4FC475] transition-colors">
+                                    {recipe.name}
+                                </h4>
+                                <div className="shrink-0 w-6 h-6 rounded-full bg-forest-50 dark:bg-[rgba(79,196,117,0.12)] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                                    <Check size={12} className="text-forest-500 dark:text-[#4FC475]" />
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5 mb-2">
+                                <span className="tag-chip">{recipe.calories} kcal</span>
+                                <span className="tag-chip"><Clock size={11} className="mr-0.5" />{recipe.cookingTime || 30}m</span>
+                                {recipe.tags.slice(0,2).map(t => (
+                                    <span key={t} className={`tag-chip ${t.toLowerCase() === 'thermomix' ? 'tag-chip-purple' : ''}`}>{t}</span>
+                                ))}
+                            </div>
+                            <p className="text-xs text-[#A38E72] dark:text-[#6B6762] line-clamp-2">
+                                {recipe.ingredients.map(i => i.name).join(', ')}
+                            </p>
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <div className="px-5 py-4 border-t border-clay-100 dark:border-[#2A3427] shrink-0">
+                <button onClick={onClose} className="btn-ghost w-full">Abbrechen</button>
+            </div>
+        </ModalShell>
+    );
+};
 
 
 // ─── FAVORITE PICKER MODAL ────────────────────────────────────────
@@ -605,6 +726,260 @@ export const RecipeDetailModal = ({
         </div>
     </ModalShell>
 );
+
+
+// ─── RECIPE IMPORT MODAL ─────────────────────────────────────────
+
+export const RecipeImportModal = ({
+    onImport, onClose
+}: {
+    onImport: (recipe: Partial<Recipe>) => void;
+    onClose: () => void;
+}) => {
+    const [activeTab, setActiveTab] = useState<'url' | 'text' | 'image'>('text');
+    const [urlInput, setUrlInput] = useState('');
+    const [textInput, setTextInput] = useState('');
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState('');
+    const [imageBase64, setImageBase64] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setImageFile(file);
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const dataUrl = ev.target?.result as string;
+            setImagePreview(dataUrl);
+            setImageBase64(dataUrl.split(',')[1]);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleImport = async () => {
+        setError(null);
+        setIsLoading(true);
+        try {
+            let result: Partial<Recipe>;
+            if (activeTab === 'url') {
+                if (!urlInput.trim()) { setError('Bitte eine URL eingeben.'); setIsLoading(false); return; }
+                let fetchedText = '';
+                try {
+                    const res = await fetch(urlInput.trim());
+                    const html = await res.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    fetchedText = doc.body.innerText || doc.body.textContent || '';
+                } catch {
+                    setError('Diese Website kann nicht direkt geladen werden. Bitte kopiere den Rezepttext und nutze die "Text"-Option.');
+                    setIsLoading(false);
+                    return;
+                }
+                result = await importRecipeFromSource('text', fetchedText);
+            } else if (activeTab === 'text') {
+                if (!textInput.trim()) { setError('Bitte Rezepttext einfügen.'); setIsLoading(false); return; }
+                result = await importRecipeFromSource('text', textInput);
+            } else {
+                if (!imageFile || !imageBase64) { setError('Bitte ein Bild auswählen.'); setIsLoading(false); return; }
+                result = await importRecipeFromSource('image', imageBase64, imageFile.type);
+            }
+            onImport(result);
+        } catch (err: any) {
+            setError(err.message || 'Fehler beim Importieren. Bitte versuche es erneut.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const tabs = [
+        { id: 'text' as const, label: 'Text', icon: <FileText size={15} /> },
+        { id: 'url'  as const, label: 'Link', icon: <Link size={15} /> },
+        { id: 'image' as const, label: 'Bild', icon: <Image size={15} /> },
+    ];
+
+    return (
+        <ModalShell onClose={onClose} maxWidth="max-w-lg">
+            <ModalHeader title="Rezept importieren" sub="Importiere ein Rezept aus Text, Link oder Bild" onClose={onClose} />
+
+            <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                {/* Tab switcher */}
+                <div className="flex gap-1 bg-clay-50 dark:bg-[#232B1F] p-1 rounded-xl border border-clay-100 dark:border-[#2A3427]">
+                    {tabs.map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => { setActiveTab(tab.id); setError(null); }}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium transition-all
+                                ${activeTab === tab.id
+                                    ? 'bg-white dark:bg-[#1C231A] text-[#1C1A16] dark:text-[#F0EDE5] shadow-sm border border-clay-100 dark:border-[#2A3427]'
+                                    : 'text-[#6E6A60] dark:text-[#9A9690] hover:text-[#1C1A16] dark:hover:text-[#F0EDE5]'
+                                }`}
+                        >
+                            {tab.icon} {tab.label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Tab content */}
+                {activeTab === 'text' && (
+                    <div>
+                        <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">
+                            Rezepttext einfügen
+                        </label>
+                        <textarea
+                            className="input-field resize-none"
+                            rows={8}
+                            placeholder="Füge hier den kopierten Rezepttext ein – z.B. von einer Website, aus einem Buch oder einer Notiz…"
+                            value={textInput}
+                            onChange={e => setTextInput(e.target.value)}
+                        />
+                    </div>
+                )}
+
+                {activeTab === 'url' && (
+                    <div>
+                        <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">
+                            Rezept-URL
+                        </label>
+                        <input
+                            className="input-field"
+                            placeholder="https://www.chefkoch.de/rezepte/…"
+                            value={urlInput}
+                            onChange={e => setUrlInput(e.target.value)}
+                        />
+                        <p className="text-xs text-[#A38E72] dark:text-[#6B6762] mt-2">
+                            Hinweis: Manche Websites verhindern das direkte Laden. Falls das nicht klappt, kopiere den Rezepttext und nutze die "Text"-Option.
+                        </p>
+                    </div>
+                )}
+
+                {activeTab === 'image' && (
+                    <div>
+                        <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">
+                            Rezeptbild hochladen
+                        </label>
+                        {imagePreview ? (
+                            <div className="relative">
+                                <img src={imagePreview} alt="Vorschau" className="w-full max-h-48 object-contain rounded-xl border border-clay-100 dark:border-[#2A3427] bg-clay-50 dark:bg-[#232B1F]" />
+                                <button
+                                    onClick={() => { setImageFile(null); setImagePreview(''); setImageBase64(''); }}
+                                    className="absolute top-2 right-2 p-1.5 bg-white dark:bg-[#1C231A] rounded-lg border border-clay-200 dark:border-[#2A3427] text-[#A38E72] hover:text-red-500 transition-colors"
+                                >
+                                    <X size={14} />
+                                </button>
+                            </div>
+                        ) : (
+                            <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-clay-200 dark:border-[#2A3427] rounded-xl cursor-pointer hover:border-forest-400 dark:hover:border-[#4FC475] hover:bg-forest-50 dark:hover:bg-[rgba(79,196,117,0.04)] transition-all">
+                                <Upload size={28} className="text-clay-300 dark:text-[#3A4635]" />
+                                <span className="text-sm text-[#6E6A60] dark:text-[#9A9690]">Bild auswählen oder hierher ziehen</span>
+                                <input type="file" accept="image/*" className="sr-only" onChange={handleFileChange} />
+                            </label>
+                        )}
+                    </div>
+                )}
+
+                {error && (
+                    <div className="flex items-start gap-2.5 p-3.5 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800/30">
+                        <AlertTriangle size={16} className="text-red-500 shrink-0 mt-0.5" />
+                        <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+                    </div>
+                )}
+            </div>
+
+            <div className="flex justify-end gap-3 px-5 py-4 border-t border-clay-100 dark:border-[#2A3427] shrink-0">
+                <button onClick={onClose} className="btn-ghost" disabled={isLoading}>Abbrechen</button>
+                <button onClick={handleImport} className="btn-primary gap-2" disabled={isLoading}>
+                    {isLoading ? <><Loader2 size={16} className="animate-spin" /> Importiere…</> : <><Upload size={16} /> Importieren</>}
+                </button>
+            </div>
+        </ModalShell>
+    );
+};
+
+
+// ─── ADD MEAL MODAL ───────────────────────────────────────────────
+
+export const AddMealModal = ({
+    onSelectSource, onClose
+}: {
+    onSelectSource: (mealType: string, source: 'favorites' | 'ai' | 'auto') => void;
+    onClose: () => void;
+}) => {
+    const [selectedMealType, setSelectedMealType] = useState<string | null>(null);
+
+    const mealTypes = [
+        { label: 'Frühstück',   icon: <Coffee size={20} />,  pill: 'meal-pill-breakfast' },
+        { label: 'Mittagessen', icon: <Sun size={20} />,     pill: 'meal-pill-lunch' },
+        { label: 'Abendessen',  icon: <Moon size={20} />,    pill: 'meal-pill-dinner' },
+        { label: 'Reste',       icon: <Package size={20} />, pill: 'meal-pill-reste' },
+    ];
+
+    return (
+        <ModalShell onClose={onClose} maxWidth="max-w-sm">
+            <ModalHeader
+                title="Mahlzeit hinzufügen"
+                sub={selectedMealType ? `${selectedMealType} — Quelle wählen` : 'Welche Mahlzeit?'}
+                onClose={onClose}
+            />
+
+            <div className="p-5 space-y-3">
+                {!selectedMealType ? (
+                    /* Step 1: pick meal type */
+                    mealTypes.map(({ label, icon, pill }) => (
+                        <button
+                            key={label}
+                            onClick={() => label === 'Reste' ? onSelectSource('Reste', 'auto') : setSelectedMealType(label)}
+                            className="w-full flex items-center gap-4 p-4 rounded-xl border border-clay-200 dark:border-[#2A3427] hover:border-forest-400 dark:hover:border-[#4FC475] hover:bg-forest-50 dark:hover:bg-[rgba(79,196,117,0.06)] transition-all group"
+                        >
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-sm font-semibold ${pill}`}>
+                                {icon}
+                            </span>
+                            <span className="font-semibold text-[#1C1A16] dark:text-[#F0EDE5] group-hover:text-forest-600 dark:group-hover:text-[#4FC475] transition-colors">
+                                {label}
+                            </span>
+                            <ArrowRight size={16} className="ml-auto text-clay-300 dark:text-[#3A4635] group-hover:text-forest-400 dark:group-hover:text-[#4FC475] transition-colors" />
+                        </button>
+                    ))
+                ) : (
+                    /* Step 2: pick source */
+                    <>
+                        <button
+                            onClick={() => onSelectSource(selectedMealType, 'favorites')}
+                            className="w-full flex items-center gap-4 p-4 rounded-xl border border-clay-200 dark:border-[#2A3427] hover:border-amber-400 dark:hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-all group"
+                        >
+                            <span className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center shrink-0">
+                                <Bookmark size={18} className="text-amber-600 dark:text-amber-400" />
+                            </span>
+                            <div className="text-left">
+                                <p className="font-semibold text-[#1C1A16] dark:text-[#F0EDE5]">Aus Favoriten</p>
+                                <p className="text-xs text-[#6E6A60] dark:text-[#9A9690]">Gespeichertes Rezept auswählen</p>
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => onSelectSource(selectedMealType, 'ai')}
+                            className="w-full flex items-center gap-4 p-4 rounded-xl border border-clay-200 dark:border-[#2A3427] hover:border-forest-400 dark:hover:border-[#4FC475] hover:bg-forest-50 dark:hover:bg-[rgba(79,196,117,0.06)] transition-all group"
+                        >
+                            <span className="w-10 h-10 rounded-xl bg-forest-50 dark:bg-[rgba(79,196,117,0.12)] flex items-center justify-center shrink-0">
+                                <Sparkles size={18} className="text-forest-500 dark:text-[#4FC475]" />
+                            </span>
+                            <div className="text-left">
+                                <p className="font-semibold text-[#1C1A16] dark:text-[#F0EDE5]">KI-Vorschläge</p>
+                                <p className="text-xs text-[#6E6A60] dark:text-[#9A9690]">5 Ideen generieren lassen</p>
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setSelectedMealType(null)}
+                            className="w-full text-sm text-[#A38E72] dark:text-[#6B6762] hover:text-[#1C1A16] dark:hover:text-[#F0EDE5] transition-colors py-1"
+                        >
+                            ← Zurück
+                        </button>
+                    </>
+                )}
+            </div>
+        </ModalShell>
+    );
+};
 
 
 // ─── RESET CONFIRM MODAL ──────────────────────────────────────────

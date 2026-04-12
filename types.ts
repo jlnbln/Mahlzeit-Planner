@@ -19,7 +19,8 @@ export enum Goal {
 export enum MealType {
   Breakfast = 'Frühstück',
   Lunch = 'Mittagessen',
-  Dinner = 'Abendessen'
+  Dinner = 'Abendessen',
+  Leftovers = 'Reste'
 }
 
 export interface AppSettings {
@@ -70,6 +71,7 @@ export interface MealSlot {
   recipe: Recipe;
   eaters: string[]; // List of user IDs eating this
   completed?: boolean;
+  isLeftover?: boolean; // Marks a Reste meal — recipe is shared with previous day's dinner
 }
 
 export interface DayPlan {

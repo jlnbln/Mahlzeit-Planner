@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { UserProfile, WeeklyPlan, ShoppingList, Recipe, AppSettings, RecipePreferences, GenerationRequestProfile, Ingredient } from './types';
+import { UserProfile, WeeklyPlan, ShoppingList, Recipe, AppSettings, RecipePreferences, GenerationRequestProfile, Ingredient, MealSlot, MealType } from './types';
 import { DEFAULT_USER, DEFAULT_SETTINGS, DAYS_OF_WEEK } from './constants';
-import { generateWeeklyPlan, generateShoppingList, generateAlternativeRecipes, generateICalString } from './services/aiService';
+import { generateWeeklyPlan, generateShoppingList, generateAlternativeRecipes, generateICalString, importRecipeFromSource } from './services/aiService';
 
 // Firebase Imports
 import { db, auth } from './firebase';
@@ -22,10 +22,17 @@ import ShoppingListView from './components/ShoppingList';
 import { UserList, UserEdit } from './components/UserViews';
 import SettingsView from './components/Settings';
 import Favorites from './components/Favorites';
-import { RecipeFormModal, GenerationModal, RecipeDetailModal, ReplacementModal, FavoritePickerModal, ResetConfirmModal } from './components/Modals';
+import { RecipeFormModal, GenerationModal, RecipeDetailModal, ReplacementModal, FavoritePickerModal, ResetConfirmModal, RecipeImportModal, AddMealModal } from './components/Modals';
 import { Auth } from './components/Auth';
 
 // --- Helpers ---
+const toLocalIso = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+};
+
 const getStartOfWeek = (date: Date, startDayName: string) => {
     const targetIndex = DAYS_OF_WEEK.indexOf(startDayName);
     const currentDayIndex = (date.getDay() + 6) % 7;
@@ -52,7 +59,7 @@ function App() {
   const [plans, setPlans] = useState<Record<string, WeeklyPlan>>({});
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>([]);
   const [currentViewDate, setCurrentViewDate] = useState<Date>(() => getStartOfWeek(new Date(), DEFAULT_SETTINGS.weekStartDay));
-  const currentViewDateIso = currentViewDate.toISOString().split('T')[0];
+  const currentViewDateIso = toLocalIso(currentViewDate);
   const activePlan = plans[currentViewDateIso];
   const [shoppingList, setShoppingList] = useState<ShoppingList | null>(null);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
@@ -70,6 +77,10 @@ function App() {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [replacementCandidates, setReplacementCandidates] = useState<Recipe[]>([]);
   const [replacementTarget, setReplacementTarget] = useState<{dayIndex: number, mealType: string, currentName: string} | null>(null);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showAddMealModal, setShowAddMealModal] = useState(false);
+  const [addMealContext, setAddMealContext] = useState<{ dayIndex: number; mealType: string } | null>(null);
+  const [isMealAddMode, setIsMealAddMode] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -88,7 +99,7 @@ function App() {
   }, [settings.theme]);
 
   useEffect(() => {
-      setCurrentViewDate(prev => getStartOfWeek(prev, settings.weekStartDay));
+      setCurrentViewDate(getStartOfWeek(new Date(), settings.weekStartDay));
   }, [settings.weekStartDay]);
 
   useEffect(() => {
@@ -173,6 +184,29 @@ function App() {
       setCurrentViewDate(getStartOfWeek(new Date(), settings.weekStartDay));
   };
 
+  const navigateToPlan = () => {
+      if (!activePlan) {
+          const orderedDays: string[] = [];
+          let startIdx = DAYS_OF_WEEK.indexOf(settings.weekStartDay);
+          if (startIdx === -1) startIdx = 0;
+          for (let i = 0; i < 7; i++) {
+              const dayName = DAYS_OF_WEEK[(startIdx + i) % 7];
+              if (!settings.includeWeekends && (dayName === 'Samstag' || dayName === 'Sonntag')) continue;
+              orderedDays.push(dayName);
+          }
+          const emptyPlan: WeeklyPlan = {
+              weekId: `manual_${currentViewDateIso}`,
+              startDate: currentViewDateIso,
+              days: orderedDays.map(day => ({ day, meals: [] })),
+              generatedAt: new Date().toISOString(),
+          };
+          const updatedPlans = { ...plans, [currentViewDateIso]: emptyPlan };
+          setPlans(updatedPlans);
+          saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes);
+      }
+      setView('plan');
+  };
+
   const toggleViewDate = (direction: 'prev' | 'next') => {
       const newDate = new Date(currentViewDate);
       if (direction === 'prev') newDate.setDate(newDate.getDate() - 7);
@@ -243,7 +277,7 @@ function App() {
     setLoading(true);
     setLoadingMessage('KI erstellt deinen Wochenplan...');
     const startDate = getStartOfWeek(targetDate, settings.weekStartDay);
-    const isoDate = startDate.toISOString().split('T')[0];
+    const isoDate = toLocalIso(startDate);
     const requestProfiles: GenerationRequestProfile[] = users.map(u => ({
         user: u,
         activeTimes: attendance[u.id] || u.homeTimes
@@ -317,16 +351,116 @@ function App() {
     }
   };
 
+  const handleImportSuccess = (partial: Partial<Recipe>) => {
+    setEditingRecipe({ ...partial, id: `import_${Date.now()}`, source: 'manual', isFavorite: true } as Recipe);
+    setShowImportModal(false);
+    setShowAddRecipeModal(true);
+  };
+
+  const handleDeleteMeal = (dayIndex: number, mealIndex: number) => {
+    if (!activePlan) return;
+    const planToUpdate = { ...activePlan } as WeeklyPlan;
+    planToUpdate.days = planToUpdate.days.map(d => ({ ...d, meals: [...d.meals] }));
+    planToUpdate.days[dayIndex].meals.splice(mealIndex, 1);
+    const updatedPlans = { ...plans, [planToUpdate.startDate]: planToUpdate };
+    setPlans(updatedPlans);
+    saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes);
+  };
+
+  const handleAddMealClick = (dayIndex: number) => {
+    setAddMealContext({ dayIndex, mealType: '' });
+    setShowAddMealModal(true);
+  };
+
+  const handleAddMealSourceSelected = async (mealType: string, source: 'favorites' | 'ai' | 'auto') => {
+    setShowAddMealModal(false);
+
+    // Reste: automatically pull previous day's dinner
+    if (source === 'auto' && mealType === 'Reste') {
+      if (!activePlan || !addMealContext) return;
+      const dayIdx = addMealContext.dayIndex;
+      if (dayIdx <= 0) {
+        alert('Kein vorheriger Tag im Plan vorhanden.');
+        setAddMealContext(null);
+        return;
+      }
+      const prevDay = activePlan.days[dayIdx - 1];
+      const prevDinner = prevDay?.meals.find(m => m.type === MealType.Dinner);
+      if (!prevDinner) {
+        alert(`Am ${prevDay?.day || 'vorherigen Tag'} gibt es kein Abendessen.`);
+        setAddMealContext(null);
+        return;
+      }
+      const planToUpdate = { ...activePlan } as WeeklyPlan;
+      planToUpdate.days = planToUpdate.days.map(d => ({ ...d, meals: [...d.meals] }));
+      planToUpdate.days[dayIdx].meals.push({
+        type: MealType.Lunch,
+        recipe: prevDinner.recipe,
+        eaters: users.map(u => u.id),
+        completed: false,
+        isLeftover: true,
+      });
+      const updatedPlans = { ...plans, [planToUpdate.startDate]: planToUpdate };
+      setPlans(updatedPlans);
+      saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes);
+      setAddMealContext(null);
+      setIsMealAddMode(false);
+      return;
+    }
+
+    setAddMealContext(prev => ({ ...prev!, mealType }));
+    setIsMealAddMode(true);
+    if (source === 'favorites') {
+      setShowFavPicker(true);
+    } else {
+      setLoading(true);
+      setLoadingMessage('KI sucht Vorschläge…');
+      try {
+        const alts = await generateAlternativeRecipes(users, '', mealType);
+        setReplacementCandidates(alts);
+        setShowReplaceModal(true);
+      } catch (e: any) { alert(e.message); }
+      finally { setLoading(false); }
+    }
+  };
+
+  const handleAddMeal = (recipe: Recipe, dayName?: string, mealType?: string) => {
+    if (!activePlan || !addMealContext) return;
+    const resolvedDay = dayName || activePlan.days[addMealContext.dayIndex]?.day || '';
+    const resolvedType = mealType || addMealContext.mealType;
+    const planToUpdate = { ...activePlan } as WeeklyPlan;
+    planToUpdate.days = planToUpdate.days.map(d => ({ ...d, meals: [...d.meals] }));
+    const dayIndex = planToUpdate.days.findIndex(d => d.day === resolvedDay);
+    if (dayIndex === -1) return;
+    const newSlot: MealSlot = {
+      type: resolvedType as MealType,
+      recipe,
+      eaters: users.map(u => u.id),
+      completed: false,
+    };
+    planToUpdate.days[dayIndex].meals.push(newSlot);
+    const updatedPlans = { ...plans, [planToUpdate.startDate]: planToUpdate };
+    setPlans(updatedPlans);
+    saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes);
+    // For favorites picker: close immediately. For AI modal: keep open (handled by modal's Fertig button).
+    if (showFavPicker) {
+      setShowFavPicker(false);
+      setIsMealAddMode(false);
+      setAddMealContext(null);
+    }
+  };
+
   const handleSaveRecipe = (updatedRecipe: Partial<Recipe>) => {
     let updatedSaved;
-    if (editingRecipe) {
-        updatedSaved = savedRecipes.map(r => r.id === editingRecipe.id ? { ...r, ...updatedRecipe } as Recipe : r);
+    const isExistingRecipe = editingRecipe && savedRecipes.some(r => r.id === editingRecipe.id);
+    if (isExistingRecipe) {
+        updatedSaved = savedRecipes.map(r => r.id === editingRecipe!.id ? { ...r, ...updatedRecipe } as Recipe : r);
         const updatedPlans = { ...plans };
         Object.keys(updatedPlans).forEach(key => {
             updatedPlans[key].days = updatedPlans[key].days.map(d => ({
                 ...d,
                 meals: d.meals.map(m => {
-                    if (m.recipe.id === editingRecipe.id) {
+                    if (m.recipe.id === editingRecipe!.id) {
                         return { ...m, recipe: { ...m.recipe, ...updatedRecipe } as Recipe };
                     }
                     return m;
@@ -364,7 +498,7 @@ function App() {
   const navItems = [
     { target: 'dashboard' as ViewState, label: 'Übersicht', icon: Home, onClick: handleGoToDashboard },
     { target: 'user_list' as ViewState, label: 'Profile', icon: Users },
-    { target: 'plan' as ViewState, label: 'Plan', icon: Calendar, disabled: !activePlan },
+    { target: 'plan' as ViewState, label: 'Plan', icon: Calendar, onClick: navigateToPlan },
     { target: 'shopping' as ViewState, label: 'Einkauf', icon: ShoppingCart, disabled: !shoppingList },
   ];
 
@@ -384,7 +518,7 @@ function App() {
               alt="MahlzeitPlanner"
               className="h-8 w-8 object-contain rounded-xl"
             />
-            <span className="font-display font-bold text-lg text-[#1C1A16] dark:text-[#F0EDE5] hidden sm:block">
+            <span className="font-display font-bold text-lg text-[#1C1A16] dark:text-[#F0EDE5]">
               MahlzeitPlanner
             </span>
           </button>
@@ -451,7 +585,7 @@ function App() {
       </header>
 
       {/* ── Main Content ────────────────────────────────────── */}
-      <main className="max-w-6xl mx-auto px-4 py-6 pb-safe-nav md:pb-10">
+      <main className="max-w-6xl mx-auto px-4 py-6 md:pb-10">
 
         {/* Loading overlay */}
         {loading && (
@@ -487,6 +621,7 @@ function App() {
                 }}
                 onSelectRecipe={setSelectedRecipe}
                 onToggleMealCompletion={toggleMealCompletion}
+                onCreateManually={navigateToPlan}
                 settings={settings}
             />
         )}
@@ -533,7 +668,7 @@ function App() {
             />
         )}
 
-        {view === 'plan' && activePlan && (
+        {view === 'plan' && activePlan !== undefined && (
             <PlanDetail
                 plan={activePlan}
                 activeTabDay={activeTabDay}
@@ -575,6 +710,8 @@ function App() {
                     setPlans(updatedPlans);
                     saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes);
                 }}
+                onAddMealClick={handleAddMealClick}
+                onDeleteMeal={handleDeleteMeal}
             />
         )}
 
@@ -613,8 +750,11 @@ function App() {
                     setEditingRecipe(null);
                     setShowAddRecipeModal(true);
                 }}
+                onImportRecipe={() => setShowImportModal(true)}
              />
         )}
+        {/* Spacer for mobile bottom nav */}
+        <div className="md:hidden" style={{ height: 'calc(4.5rem + env(safe-area-inset-bottom))' }} />
       </main>
 
       {/* ── Mobile Bottom Tab Bar ────────────────────────────── */}
@@ -668,46 +808,68 @@ function App() {
              settings={settings}
           />
       )}
-      {showReplaceModal && replacementTarget && (
+      {showReplaceModal && (isMealAddMode || replacementTarget) && (
           <ReplacementModal
              candidates={replacementCandidates}
-             targetName={replacementTarget.currentName}
+             targetName={isMealAddMode ? (addMealContext?.mealType || '') : replacementTarget!.currentName}
              onSelect={(newR) => {
-                 const updatedPlans = { ...plans };
-                 const planToUpdate = { ...activePlan } as WeeklyPlan;
-                 planToUpdate.days[replacementTarget.dayIndex].meals = planToUpdate.days[replacementTarget.dayIndex].meals.map(m =>
-                     m.type === replacementTarget.mealType ? { ...m, recipe: newR } : m
-                 );
-                 updatedPlans[planToUpdate.startDate] = planToUpdate;
-                 setPlans(updatedPlans);
-                 saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes);
-                 setShowReplaceModal(false);
+                 if (!isMealAddMode) {
+                     const updatedPlans = { ...plans };
+                     const planToUpdate = { ...activePlan } as WeeklyPlan;
+                     planToUpdate.days[replacementTarget!.dayIndex].meals = planToUpdate.days[replacementTarget!.dayIndex].meals.map(m =>
+                         m.type === replacementTarget!.mealType ? { ...m, recipe: newR } : m
+                     );
+                     updatedPlans[planToUpdate.startDate] = planToUpdate;
+                     setPlans(updatedPlans);
+                     saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes);
+                     setShowReplaceModal(false);
+                 }
              }}
-             onClose={() => setShowReplaceModal(false)}
+             isAddMode={isMealAddMode}
+             planDays={activePlan?.days.map(d => d.day)}
+             initialDayName={addMealContext ? activePlan?.days[addMealContext.dayIndex]?.day : undefined}
+             onAdd={(recipe, dayName, mealType) => handleAddMeal(recipe, dayName, mealType)}
+             onClose={() => { setShowReplaceModal(false); setIsMealAddMode(false); setAddMealContext(null); }}
           />
       )}
-      {showFavPicker && replacementTarget && (
+      {showFavPicker && (isMealAddMode || replacementTarget) && (
           <FavoritePickerModal
               favorites={getAllFavoritedRecipes()}
-              targetName={replacementTarget.currentName}
+              targetName={isMealAddMode ? (addMealContext?.mealType || '') : replacementTarget!.currentName}
               onSelect={(newR) => {
-                const updatedPlans = { ...plans };
-                const planToUpdate = { ...activePlan } as WeeklyPlan;
-                planToUpdate.days[replacementTarget.dayIndex].meals = planToUpdate.days[replacementTarget.dayIndex].meals.map(m =>
-                    m.type === replacementTarget.mealType ? { ...m, recipe: newR } : m
-                );
-                updatedPlans[planToUpdate.startDate] = planToUpdate;
-                setPlans(updatedPlans);
-                saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes);
-                setShowFavPicker(false);
+                if (isMealAddMode) {
+                    handleAddMeal(newR);
+                } else {
+                    const updatedPlans = { ...plans };
+                    const planToUpdate = { ...activePlan } as WeeklyPlan;
+                    planToUpdate.days[replacementTarget!.dayIndex].meals = planToUpdate.days[replacementTarget!.dayIndex].meals.map(m =>
+                        m.type === replacementTarget!.mealType ? { ...m, recipe: newR } : m
+                    );
+                    updatedPlans[planToUpdate.startDate] = planToUpdate;
+                    setPlans(updatedPlans);
+                    saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes);
+                    setShowFavPicker(false);
+                }
               }}
-              onClose={() => setShowFavPicker(false)}
+              onClose={() => { setShowFavPicker(false); setIsMealAddMode(false); setAddMealContext(null); }}
           />
       )}
       {showResetConfirm && (
           <ResetConfirmModal
              onConfirm={handleResetDatabase}
              onCancel={() => setShowResetConfirm(false)}
+          />
+      )}
+      {showImportModal && (
+          <RecipeImportModal
+              onImport={handleImportSuccess}
+              onClose={() => setShowImportModal(false)}
+          />
+      )}
+      {showAddMealModal && (
+          <AddMealModal
+              onSelectSource={handleAddMealSourceSelected}
+              onClose={() => { setShowAddMealModal(false); setIsMealAddMode(false); setAddMealContext(null); }}
           />
       )}
     </div>
