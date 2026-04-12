@@ -482,12 +482,12 @@ function App() {
 
   if (authLoading) {
       return (
-          <div className="min-h-screen flex items-center justify-center bg-parchment dark:bg-[#131912]">
+          <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--c-bg)' }}>
               <div className="flex flex-col items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-forest-50 dark:bg-[rgba(79,196,117,0.12)] flex items-center justify-center">
-                      <ChefHat className="h-6 w-6 text-forest-500 dark:text-[#4FC475]" />
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center" style={{ background: '#b8fd4b', boxShadow: '0 12px 32px rgba(184,253,75,0.4)' }}>
+                      <ChefHat className="h-7 w-7" style={{ color: '#3d5e00' }} />
                   </div>
-                  <Loader2 className="h-5 w-5 animate-spin text-forest-500 dark:text-[#4FC475]" />
+                  <Loader2 className="h-5 w-5 animate-spin-slow" style={{ color: 'var(--c-primary)' }} />
               </div>
           </div>
       );
@@ -495,15 +495,28 @@ function App() {
 
   if (!user) return <Auth />;
 
-  const navItems = [
+  const desktopTextNavItems = [
+    { target: 'dashboard' as ViewState, label: 'Übersicht', onClick: handleGoToDashboard },
+    { target: 'user_list' as ViewState, label: 'Profile' },
+    { target: 'plan' as ViewState, label: 'Plan', onClick: navigateToPlan },
+    { target: 'shopping' as ViewState, label: 'Einkauf', disabled: !shoppingList },
+  ];
+
+  const desktopIconNavItems = [
+    { target: 'favorites' as ViewState, icon: Heart, title: 'Favoriten' },
+    { target: 'settings' as ViewState, icon: Settings, title: 'Einstellungen' },
+  ];
+
+  const mobileNavItems = [
     { target: 'dashboard' as ViewState, label: 'Übersicht', icon: Home, onClick: handleGoToDashboard },
     { target: 'user_list' as ViewState, label: 'Profile', icon: Users },
     { target: 'plan' as ViewState, label: 'Plan', icon: Calendar, onClick: navigateToPlan },
     { target: 'shopping' as ViewState, label: 'Einkauf', icon: ShoppingCart, disabled: !shoppingList },
+    { target: 'favorites' as ViewState, label: 'Favoriten', icon: Heart },
   ];
 
   return (
-    <div className="min-h-screen bg-parchment dark:bg-[#131912] text-[#1C1A16] dark:text-[#F0EDE5] transition-colors duration-200">
+    <div className="min-h-screen transition-colors duration-200" style={{ background: 'var(--c-bg)', color: 'var(--c-text)' }}>
 
       {/* ── Desktop / Mobile Header ─────────────────────────── */}
       <header className="app-header sticky top-0 z-30">
@@ -511,74 +524,63 @@ function App() {
           {/* Logo */}
           <button
             onClick={handleGoToDashboard}
-            className="flex items-center gap-2.5 group"
+            className="flex items-center gap-2.5"
           >
-            <img
-              src="/mahlzeitplanner-logo.png"
-              alt="MahlzeitPlanner"
-              className="h-8 w-8 object-contain rounded-xl"
-            />
-            <span className="font-display font-bold text-lg text-[#1C1A16] dark:text-[#F0EDE5]">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: '#b8fd4b' }}>
+              <ChefHat className="h-4 w-4" style={{ color: '#3d5e00' }} />
+            </div>
+            <span className="font-extrabold text-lg tracking-tight" style={{ color: 'var(--c-text)', letterSpacing: '-0.02em' }}>
               MahlzeitPlanner
             </span>
           </button>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-1">
-            {navItems.map(item => (
+            {desktopTextNavItems.map(item => (
               <button
                 key={item.target}
-                onClick={item.onClick || (() => setView(item.target))}
-                disabled={item.disabled}
-                className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-150
-                  ${view === item.target
-                    ? 'bg-forest-500 text-white dark:bg-[#4FC475] dark:text-[#071B10]'
-                    : 'text-[#6E6A60] dark:text-[#9A9690] hover:bg-clay-100 dark:hover:bg-[#232B1F] hover:text-[#1C1A16] dark:hover:text-[#F0EDE5]'
-                  }
-                  ${item.disabled ? 'opacity-35 cursor-not-allowed' : ''}
+                onClick={(item as any).onClick || (() => setView(item.target))}
+                disabled={(item as any).disabled}
+                className={`px-3.5 py-2 rounded-full text-sm font-semibold transition-all duration-150
+                  ${(item as any).disabled ? 'opacity-35 cursor-not-allowed' : ''}
                 `}
+                style={view === item.target
+                  ? { background: 'var(--c-accent)', color: 'var(--c-on-accent)' }
+                  : { color: 'var(--c-text-mid)' }
+                }
               >
                 {item.label}
               </button>
             ))}
-            <div className="w-px h-5 bg-clay-200 dark:bg-[#2A3427] mx-1" />
-            <button
-              onClick={() => setView('favorites')}
-              className={`p-2 rounded-lg transition-all duration-150
-                ${view === 'favorites'
-                  ? 'bg-forest-500 text-white dark:bg-[#4FC475] dark:text-[#071B10]'
-                  : 'text-[#6E6A60] dark:text-[#9A9690] hover:bg-clay-100 dark:hover:bg-[#232B1F]'
-                }`}
-              title="Favoriten"
-            >
-              <Heart size={18} className={view === 'favorites' ? 'fill-current' : ''} />
-            </button>
-            <button
-              onClick={() => setView('settings')}
-              className={`p-2 rounded-lg transition-all duration-150
-                ${view === 'settings'
-                  ? 'bg-forest-500 text-white dark:bg-[#4FC475] dark:text-[#071B10]'
-                  : 'text-[#6E6A60] dark:text-[#9A9690] hover:bg-clay-100 dark:hover:bg-[#232B1F]'
-                }`}
-              title="Einstellungen"
-            >
-              <Settings size={18} />
-            </button>
+            <div className="w-px h-5 mx-1" style={{ background: 'var(--c-border)' }} />
+            {desktopIconNavItems.map(item => {
+              const Icon = item.icon;
+              const isActive = view === item.target;
+              return (
+                <button
+                  key={item.target}
+                  onClick={() => setView(item.target)}
+                  title={item.title}
+                  className="w-9 h-9 flex items-center justify-center rounded-full transition-all duration-150"
+                  style={isActive
+                    ? { background: 'var(--c-accent)', color: 'var(--c-on-accent)' }
+                    : { color: 'var(--c-text-mid)' }
+                  }
+                >
+                  <Icon size={18} className={isActive && item.target === 'favorites' ? 'fill-current' : ''} />
+                </button>
+              );
+            })}
           </nav>
 
-          {/* Mobile header icons */}
+          {/* Mobile header right side */}
           <div className="flex md:hidden items-center gap-1">
             <button
-              onClick={() => setView('favorites')}
-              className={`p-2 rounded-lg ${view === 'favorites' ? 'text-forest-500 dark:text-[#4FC475]' : 'text-[#6E6A60] dark:text-[#9A9690]'}`}
-            >
-              <Heart size={20} className={view === 'favorites' ? 'fill-current' : ''} />
-            </button>
-            <button
               onClick={() => setView('settings')}
-              className={`p-2 rounded-lg ${view === 'settings' ? 'text-forest-500 dark:text-[#4FC475]' : 'text-[#6E6A60] dark:text-[#9A9690]'}`}
+              className="w-9 h-9 flex items-center justify-center rounded-full transition-colors"
+              style={{ background: 'var(--c-surface-low)', color: 'var(--c-text-mid)' }}
             >
-              <Settings size={20} />
+              <Settings size={18} />
             </button>
           </div>
         </div>
@@ -589,15 +591,15 @@ function App() {
 
         {/* Loading overlay */}
         {loading && (
-          <div className="fixed inset-0 bg-parchment/80 dark:bg-[#131912]/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
+          <div className="fixed inset-0 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4" style={{ background: 'var(--c-overlay)' }}>
             <div className="card p-6 flex flex-col items-center gap-4 animate-scale-in">
               <div className="relative">
-                <div className="w-12 h-12 rounded-2xl bg-forest-50 dark:bg-[rgba(79,196,117,0.12)] flex items-center justify-center">
-                  <Sparkles className="h-5 w-5 text-forest-500 dark:text-[#4FC475]" />
+                <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: '#b8fd4b' }}>
+                  <Sparkles className="h-6 w-6" style={{ color: '#3d5e00' }} />
                 </div>
-                <div className="absolute -inset-1 rounded-3xl border-2 border-forest-200 dark:border-[rgba(79,196,117,0.24)] border-t-forest-500 dark:border-t-[#4FC475] animate-spin-slow" />
+                <div className="absolute -inset-1.5 rounded-full border-2 border-transparent animate-spin-slow" style={{ borderTopColor: 'var(--c-primary)' }} />
               </div>
-              <p className="text-sm font-medium text-[#6E6A60] dark:text-[#9A9690] text-center max-w-[200px]">{loadingMessage}</p>
+              <p className="text-sm font-semibold text-center max-w-[200px]" style={{ color: 'var(--c-text-mid)' }}>{loadingMessage}</p>
             </div>
           </div>
         )}
@@ -754,14 +756,14 @@ function App() {
              />
         )}
         {/* Spacer for mobile bottom nav */}
-        <div className="md:hidden" style={{ height: 'calc(4.5rem + env(safe-area-inset-bottom))' }} />
+        <div className="md:hidden" style={{ height: 'calc(5.5rem + env(safe-area-inset-bottom))' }} />
       </main>
 
-      {/* ── Mobile Bottom Tab Bar ────────────────────────────── */}
-      <nav className="bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-30">
-        <div className="flex items-center justify-around px-2 pt-2"
-             style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
-          {navItems.map(item => {
+      {/* ── Mobile Bottom Tab Bar (floating pill) ───────────── */}
+      <nav className="bottom-nav md:hidden fixed bottom-0 left-0 right-0 z-30 px-5"
+           style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+        <div className="bottom-nav-pill justify-around px-2">
+          {mobileNavItems.map(item => {
             const Icon = item.icon;
             const isActive = view === item.target;
             return (
@@ -769,13 +771,17 @@ function App() {
                 key={item.target}
                 onClick={item.onClick || (() => !item.disabled && setView(item.target))}
                 disabled={item.disabled}
-                className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl transition-all duration-150 min-w-[60px]
-                  ${isActive ? 'text-forest-500 dark:text-[#4FC475]' : 'text-[#A38E72] dark:text-[#6B6762]'}
+                className={`flex flex-col items-center justify-center gap-0.5 transition-all duration-200
                   ${item.disabled ? 'opacity-30' : ''}
+                  ${isActive ? 'rounded-full px-4 py-2 scale-105' : 'px-3 py-2 rounded-full'}
                 `}
+                style={isActive
+                  ? { background: 'var(--c-accent)', color: 'var(--c-on-accent)' }
+                  : { color: 'var(--c-text-dim)' }
+                }
               >
-                <Icon size={22} className={isActive ? 'fill-current' : ''} strokeWidth={isActive ? 2.2 : 1.8} />
-                <span className={`text-[10px] font-medium ${isActive ? 'text-forest-500 dark:text-[#4FC475]' : ''}`}>
+                <Icon size={20} className={isActive ? 'fill-current' : ''} strokeWidth={isActive ? 2.5 : 1.8} />
+                <span className="text-[9px] font-bold uppercase tracking-wide leading-none mt-0.5">
                   {item.label}
                 </span>
               </button>

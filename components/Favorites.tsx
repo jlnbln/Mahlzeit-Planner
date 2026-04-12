@@ -156,7 +156,7 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
                         <Heart className="h-6 w-6 fill-red-400 text-red-400" />
                     </h2>
                     {recipes.length > 0 && (
-                        <p className="text-sm text-[#6E6A60] dark:text-[#9A9690] mt-1">
+                        <p className="text-sm mt-1 font-medium" style={{ color: 'var(--c-text-mid)' }}>
                             {isFiltering ? `${filtered.length} von ${recipes.length}` : recipes.length} gespeicherte Rezepte
                         </p>
                     )}
@@ -177,13 +177,14 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
             {/* ── Empty state (no recipes at all) ──────────── */}
             {recipes.length === 0 ? (
                 <div className="card p-12 flex flex-col items-center text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-4">
-                        <Heart className="h-7 w-7 text-red-300 dark:text-red-800" />
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+                         style={{ background: '#fef0ee' }}>
+                        <Heart className="h-7 w-7 text-red-300" />
                     </div>
-                    <h3 className="font-display text-xl font-bold text-[#1C1A16] dark:text-[#F0EDE5] mb-2">
+                    <h3 className="text-xl font-extrabold mb-2" style={{ color: 'var(--c-text)' }}>
                         Noch keine Favoriten
                     </h3>
-                    <p className="text-sm text-[#6E6A60] dark:text-[#9A9690] max-w-xs mb-6">
+                    <p className="text-sm max-w-xs mb-6" style={{ color: 'var(--c-text-mid)' }}>
                         Markiere Rezepte im Wochenplan als Favorit oder füge eigene Rezepte hinzu.
                     </p>
                     <div className="flex gap-3 flex-wrap justify-center">
@@ -200,7 +201,7 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
                     {/* ── Search ───────────────────────────── */}
                     <div className="space-y-3">
                         <div className="relative">
-                            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A38E72] dark:text-[#6B6762] pointer-events-none" />
+                            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--c-text-dim)' }} />
                             <input
                                 className="input-field pl-9 pr-9"
                                 placeholder="Rezepte suchen…"
@@ -210,7 +211,8 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
                             {searchTerm && (
                                 <button
                                     onClick={() => setSearchTerm('')}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A38E72] hover:text-[#1C1A16] dark:hover:text-[#F0EDE5] transition-colors"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                                    style={{ color: 'var(--c-text-dim)' }}
                                 >
                                     <X size={15} />
                                 </button>
@@ -219,32 +221,37 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
 
                         {/* ── Category filter bar ───────────── */}
                         <div className="flex gap-2 flex-wrap items-center">
-                            {categories.map(cat => (
-                                <button
-                                    key={cat.id}
-                                    onClick={() => toggleCategory(cat.id)}
-                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all whitespace-nowrap
-                                        ${openCategory === cat.id || cat.activeCount > 0
-                                            ? 'bg-forest-500 dark:bg-[#4FC475] text-white dark:text-[#071B10] border-forest-500 dark:border-[#4FC475]'
-                                            : 'bg-white dark:bg-[#1C231A] text-[#6E6A60] dark:text-[#9A9690] border-clay-200 dark:border-[#2A3427] hover:border-forest-400 dark:hover:border-[#4FC475]'
-                                        }`}
-                                >
-                                    {cat.label}
-                                    {cat.activeCount > 0 && (
-                                        <span className="w-4 h-4 rounded-full bg-white/30 dark:bg-black/20 text-[10px] flex items-center justify-center font-bold leading-none">
-                                            {cat.activeCount}
-                                        </span>
-                                    )}
-                                    <ChevronDown
-                                        size={12}
-                                        className={`transition-transform duration-200 ${openCategory === cat.id ? 'rotate-180' : ''}`}
-                                    />
-                                </button>
-                            ))}
+                            {categories.map(cat => {
+                                const isActiveOrOpen = openCategory === cat.id || cat.activeCount > 0;
+                                return (
+                                    <button
+                                        key={cat.id}
+                                        onClick={() => toggleCategory(cat.id)}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold border transition-all whitespace-nowrap"
+                                        style={isActiveOrOpen
+                                            ? { background: 'var(--c-primary)', color: 'var(--c-on-primary)', borderColor: 'var(--c-primary)' }
+                                            : { background: 'var(--c-surface)', color: 'var(--c-text-mid)', borderColor: 'var(--c-border)' }
+                                        }
+                                    >
+                                        {cat.label}
+                                        {cat.activeCount > 0 && (
+                                            <span className="w-4 h-4 rounded-full text-[10px] flex items-center justify-center font-bold leading-none"
+                                                  style={{ background: 'rgba(255,255,255,0.3)' }}>
+                                                {cat.activeCount}
+                                            </span>
+                                        )}
+                                        <ChevronDown
+                                            size={12}
+                                            className={`transition-transform duration-200 ${openCategory === cat.id ? 'rotate-180' : ''}`}
+                                        />
+                                    </button>
+                                );
+                            })}
                             {activeFilterCount > 0 && (
                                 <button
                                     onClick={clearAllFilters}
-                                    className="text-xs text-[#A38E72] dark:text-[#6B6762] hover:text-[#1C1A16] dark:hover:text-[#F0EDE5] transition-colors underline self-center"
+                                    className="text-xs underline self-center transition-colors"
+                                    style={{ color: 'var(--c-text-dim)' }}
                                 >
                                     Zurücksetzen
                                 </button>
@@ -253,16 +260,17 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
 
                         {/* ── Expanded category panel ───────── */}
                         {openCategoryData && (
-                            <div className="bg-white dark:bg-[#1C231A] border border-clay-200 dark:border-[#2A3427] rounded-xl p-3 flex flex-wrap gap-2">
+                            <div className="rounded-2xl p-3 flex flex-wrap gap-2 border"
+                                 style={{ background: 'var(--c-surface)', borderColor: 'var(--c-border)' }}>
                                 {openCategoryData.options.map(opt => (
                                     <button
                                         key={opt.label}
                                         onClick={opt.onToggle}
-                                        className={`tag-chip cursor-pointer transition-all ${
-                                            opt.active
-                                                ? 'bg-forest-500 dark:bg-[#4FC475] text-white dark:text-[#071B10] border-forest-500 dark:border-[#4FC475]'
-                                                : 'hover:border-forest-400 dark:hover:border-[#4FC475] hover:text-forest-600 dark:hover:text-[#4FC475]'
-                                        }`}
+                                        className="tag-chip cursor-pointer transition-all"
+                                        style={opt.active
+                                            ? { background: 'var(--c-primary)', color: 'var(--c-on-primary)', borderColor: 'var(--c-primary)' }
+                                            : {}
+                                        }
                                     >
                                         {opt.label}
                                     </button>
@@ -274,9 +282,9 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
                     {/* ── No results ───────────────────────── */}
                     {filtered.length === 0 ? (
                         <div className="card p-10 flex flex-col items-center text-center">
-                            <Search className="h-8 w-8 text-clay-300 dark:text-[#3A4635] mb-3" />
-                            <p className="font-semibold text-[#1C1A16] dark:text-[#F0EDE5] mb-1">Keine Rezepte gefunden</p>
-                            <p className="text-sm text-[#6E6A60] dark:text-[#9A9690]">Versuche andere Suchbegriffe oder Filter.</p>
+                            <Search className="h-8 w-8 mb-3" style={{ color: 'var(--c-text-faint)' }} />
+                            <p className="font-bold mb-1" style={{ color: 'var(--c-text)' }}>Keine Rezepte gefunden</p>
+                            <p className="text-sm" style={{ color: 'var(--c-text-mid)' }}>Versuche andere Suchbegriffe oder Filter.</p>
                         </div>
                     ) : (
                         /* ── Recipe grid ──────────────────── */
@@ -287,7 +295,8 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
                                     className="card card-hover overflow-hidden animate-fade-in"
                                     style={{ animationDelay: `${idx * 0.04}s` }}
                                 >
-                                    <div className={`h-1 ${recipe.source === 'manual' ? 'bg-blue-400 dark:bg-blue-500' : 'bg-forest-400 dark:bg-[#4FC475]'}`} />
+                                    <div className="h-1.5 rounded-t-xl"
+                                         style={{ background: '#b8fd4b' }} />
 
                                     <div className="p-5">
                                         <div className="flex items-start justify-between gap-2 mb-3">
@@ -295,15 +304,22 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
                                                 onClick={() => onSelectRecipe(recipe)}
                                                 className="flex-1 text-left"
                                             >
-                                                <h3 className="font-display font-bold text-[#1C1A16] dark:text-[#F0EDE5] leading-snug line-clamp-2 hover:text-forest-600 dark:hover:text-[#4FC475] transition-colors">
+                                                <h3 className="font-bold leading-snug line-clamp-2 transition-colors"
+                                                    style={{ color: 'var(--c-text)' }}
+                                                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--c-primary)')}
+                                                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--c-text)')}
+                                                >
                                                     {recipe.name}
                                                 </h3>
                                             </button>
                                             <div className="flex items-center gap-1.5 shrink-0">
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); onEditRecipe(recipe); }}
-                                                    className="p-1.5 rounded-lg text-[#A38E72] dark:text-[#6B6762] hover:text-forest-500 dark:hover:text-[#4FC475] hover:bg-forest-50 dark:hover:bg-[rgba(79,196,117,0.08)] transition-colors"
+                                                    className="p-1.5 rounded-lg transition-colors"
+                                                    style={{ color: 'var(--c-text-dim)' }}
                                                     title="Bearbeiten"
+                                                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--c-primary)'; e.currentTarget.style.background = 'var(--c-surface-low)'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--c-text-dim)'; e.currentTarget.style.background = ''; }}
                                                 >
                                                     <Edit2 size={15} />
                                                 </button>
@@ -334,7 +350,8 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
 
                                         <p
                                             onClick={() => onSelectRecipe(recipe)}
-                                            className="text-xs text-[#A38E72] dark:text-[#6B6762] line-clamp-2 cursor-pointer"
+                                            className="text-xs line-clamp-2 cursor-pointer"
+                                            style={{ color: 'var(--c-text-dim)' }}
                                         >
                                             {recipe.ingredients.map(i => i.name).join(', ')}
                                         </p>

@@ -23,7 +23,7 @@ const StarRating = ({ rating, onRate, size = 20 }: { rating: number; onRate?: (r
             >
                 <Star
                     size={size}
-                    className={star <= rating ? 'fill-amber-400 text-amber-400' : 'text-clay-200 dark:text-[#3A4635]'}
+                    className={star <= rating ? 'fill-amber-400 text-amber-400' : 'text-[#c4c8be] dark:text-[#3a4835]'}
                 />
             </button>
         ))}
@@ -42,7 +42,7 @@ const ModalShell = ({
 }) => (
     <div className="modal-backdrop" onClick={onClose}>
         <div
-            className={`modal-sheet bg-white dark:bg-[#1C231A] w-full ${maxWidth} rounded-2xl shadow-modal
+            className={`modal-sheet bg-white dark:bg-[#1e2a1e] w-full ${maxWidth} rounded-2xl shadow-modal
                 overflow-hidden flex flex-col max-h-[90dvh] sm:max-h-[88vh]
                 ${noPad ? '' : ''}`}
             onClick={e => e.stopPropagation()}
@@ -53,14 +53,14 @@ const ModalShell = ({
 );
 
 const ModalHeader = ({ title, sub, onClose }: { title: string; sub?: string; onClose: () => void }) => (
-    <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-4 border-b border-clay-100 dark:border-[#2A3427] shrink-0">
+    <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-4 border-b border-[#e6e9e1] dark:border-[#2c3a2c] shrink-0">
         <div>
-            <h3 className="font-display text-xl font-bold text-[#1C1A16] dark:text-[#F0EDE5]">{title}</h3>
-            {sub && <p className="text-sm text-[#6E6A60] dark:text-[#9A9690] mt-0.5">{sub}</p>}
+            <h3 className="font-sans text-xl font-bold text-[#2c302b] dark:text-[#e6ede6]">{title}</h3>
+            {sub && <p className="text-sm text-[#595c57] dark:text-[#8a9089] mt-0.5">{sub}</p>}
         </div>
         <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#A38E72] hover:text-[#1C1A16] dark:hover:text-[#F0EDE5] hover:bg-clay-100 dark:hover:bg-[#232B1F] transition-colors shrink-0"
+            className="p-1.5 rounded-lg text-[#959b8e] hover:text-[#2c302b] dark:hover:text-[#F0EDE5] hover:bg-[#eff2ea] dark:hover:bg-[#232B1F] transition-colors shrink-0"
         >
             <X size={18} />
         </button>
@@ -118,7 +118,7 @@ export const RecipeFormModal = ({
             <div className="flex-1 overflow-y-auto p-5 space-y-5">
                 {/* Name */}
                 <div>
-                    <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">Rezeptname</label>
+                    <label className="block text-sm font-medium text-[#2c302b] dark:text-[#e6ede6] mb-1.5">Rezeptname</label>
                     <input
                         className="input-field"
                         placeholder="z.B. Spaghetti Carbonara"
@@ -130,7 +130,7 @@ export const RecipeFormModal = ({
                 {/* Kcal + Zeit + Tags */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                        <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">Kalorien</label>
+                        <label className="block text-sm font-medium text-[#2c302b] dark:text-[#e6ede6] mb-1.5">Kalorien</label>
                         <input
                             type="number"
                             className="input-field"
@@ -139,7 +139,7 @@ export const RecipeFormModal = ({
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">Dauer (Min)</label>
+                        <label className="block text-sm font-medium text-[#2c302b] dark:text-[#e6ede6] mb-1.5">Dauer (Min)</label>
                         <input
                             type="number"
                             className="input-field"
@@ -148,7 +148,7 @@ export const RecipeFormModal = ({
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">Tags</label>
+                        <label className="block text-sm font-medium text-[#2c302b] dark:text-[#e6ede6] mb-1.5">Tags</label>
                         <input
                             className="input-field"
                             placeholder="Schnell, Vegan…"
@@ -160,11 +160,11 @@ export const RecipeFormModal = ({
 
                 {/* Ingredients */}
                 <div>
-                    <label className="block text-sm font-semibold text-[#1C1A16] dark:text-[#F0EDE5] mb-2">Zutaten</label>
-                    <div className="bg-clay-50 dark:bg-[#232B1F] rounded-xl border border-clay-100 dark:border-[#2A3427] p-3 space-y-2">
+                    <label className="block text-sm font-semibold text-[#2c302b] dark:text-[#e6ede6] mb-2">Zutaten</label>
+                    <div className="bg-[#f5f7f0] dark:bg-[#1e2a1e] rounded-xl border border-[#e6e9e1] dark:border-[#2c3a2c] p-3 space-y-2">
                         {(recipe.ingredients || []).map((ing, i) => (
-                            <div key={i} className="flex items-center justify-between bg-white dark:bg-[#1C231A] rounded-lg px-3 py-2 text-sm border border-clay-100 dark:border-[#2A3427]">
-                                <span className="text-[#1C1A16] dark:text-[#F0EDE5]">
+                            <div key={i} className="flex items-center justify-between bg-white dark:bg-[#1e2a1e] rounded-lg px-3 py-2 text-sm border border-[#e6e9e1] dark:border-[#2c3a2c]">
+                                <span className="text-[#2c302b] dark:text-[#e6ede6]">
                                     <span className="font-semibold">{ing.amount} {ing.unit}</span> {ing.name}
                                 </span>
                                 <button
@@ -205,12 +205,12 @@ export const RecipeFormModal = ({
 
                 {/* Instructions */}
                 <div>
-                    <label className="block text-sm font-semibold text-[#1C1A16] dark:text-[#F0EDE5] mb-2">Zubereitungsschritte</label>
-                    <div className="bg-clay-50 dark:bg-[#232B1F] rounded-xl border border-clay-100 dark:border-[#2A3427] p-3 space-y-2">
+                    <label className="block text-sm font-semibold text-[#2c302b] dark:text-[#e6ede6] mb-2">Zubereitungsschritte</label>
+                    <div className="bg-[#f5f7f0] dark:bg-[#1e2a1e] rounded-xl border border-[#e6e9e1] dark:border-[#2c3a2c] p-3 space-y-2">
                         {(recipe.instructions || []).map((step, i) => (
-                            <div key={i} className="flex items-start gap-2.5 bg-white dark:bg-[#1C231A] rounded-lg px-3 py-2 text-sm border border-clay-100 dark:border-[#2A3427] group">
-                                <span className="shrink-0 w-5 h-5 rounded-full bg-forest-500 dark:bg-[#4FC475] text-white dark:text-[#071B10] flex items-center justify-center text-[10px] font-bold mt-0.5">{i+1}</span>
-                                <p className="flex-1 text-[#1C1A16] dark:text-[#F0EDE5] leading-snug">{step}</p>
+                            <div key={i} className="flex items-start gap-2.5 bg-white dark:bg-[#1e2a1e] rounded-lg px-3 py-2 text-sm border border-[#e6e9e1] dark:border-[#2c3a2c] group">
+                                <span className="shrink-0 w-5 h-5 rounded-full bg-[#426500] dark:bg-[#b8fd4b] text-white dark:text-[#3d5e00] flex items-center justify-center text-[10px] font-bold mt-0.5">{i+1}</span>
+                                <p className="flex-1 text-[#2c302b] dark:text-[#e6ede6] leading-snug">{step}</p>
                                 <button
                                     onClick={() => setRecipe(r => ({ ...r, instructions: (r.instructions || []).filter((_, idx) => idx !== i) }))}
                                     className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -235,7 +235,7 @@ export const RecipeFormModal = ({
                 </div>
             </div>
 
-            <div className="flex justify-end gap-3 px-5 py-4 border-t border-clay-100 dark:border-[#2A3427] shrink-0">
+            <div className="flex justify-end gap-3 px-5 py-4 border-t border-[#e6e9e1] dark:border-[#2c3a2c] shrink-0">
                 <button onClick={onClose} className="btn-ghost">Abbrechen</button>
                 <button onClick={handleSave} className="btn-primary">
                     {initialRecipe ? 'Änderungen speichern' : 'Rezept speichern'}
@@ -300,7 +300,7 @@ export const GenerationModal = ({
             {step === 1 && (
                 <div className="p-5 space-y-5 animate-fade-in">
                     <div>
-                        <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-2">
+                        <label className="block text-sm font-medium text-[#2c302b] dark:text-[#e6ede6] mb-2">
                             Startdatum ({settings.weekStartDay})
                         </label>
                         <input
@@ -314,9 +314,9 @@ export const GenerationModal = ({
                         />
                     </div>
 
-                    <div className="flex items-center gap-2.5 p-3.5 bg-forest-50 dark:bg-[rgba(79,196,117,0.08)] rounded-xl border border-forest-100 dark:border-[rgba(79,196,117,0.2)]">
-                        <Calendar size={16} className="text-forest-500 dark:text-[#4FC475] shrink-0" />
-                        <p className="text-sm text-forest-700 dark:text-[#4FC475] font-medium">
+                    <div className="flex items-center gap-2.5 p-3.5 bg-[#eff2ea] dark:bg-[rgba(66,101,0,0.08)] rounded-xl border border-[#eff2ea] dark:border-[rgba(184,253,75,0.2)]">
+                        <Calendar size={16} className="text-[#426500] dark:text-[#b8fd4b] shrink-0" />
+                        <p className="text-sm text-[#395800] dark:text-[#b8fd4b] font-medium">
                             Woche vom {targetDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                         </p>
                     </div>
@@ -334,27 +334,27 @@ export const GenerationModal = ({
             {step === 2 && (
                 <div className="flex flex-col overflow-hidden animate-fade-in">
                     <div className="flex-1 overflow-auto p-5">
-                        <p className="text-sm text-[#6E6A60] dark:text-[#9A9690] mb-3">
+                        <p className="text-sm text-[#595c57] dark:text-[#8a9089] mb-3">
                             Wer isst wann mit? (3 Kästchen pro Tag = F, M, A)
                         </p>
-                        <div className="border border-clay-200 dark:border-[#2A3427] rounded-xl overflow-hidden">
+                        <div className="border border-[#c4c8be] dark:border-[#2c3a2c] rounded-xl overflow-hidden">
                             <table className="w-full text-sm">
-                                <thead className="bg-clay-50 dark:bg-[#232B1F]">
+                                <thead className="bg-[#f5f7f0] dark:bg-[#1e2a1e]">
                                     <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#6E6A60] dark:text-[#9A9690] uppercase tracking-wide">
+                                        <th className="px-4 py-3 text-left text-xs font-semibold text-[#595c57] dark:text-[#8a9089] uppercase tracking-wide">
                                             Person
                                         </th>
                                         {displayDays.map(d => (
-                                            <th key={d} className="px-2 py-3 text-center text-xs font-semibold text-[#6E6A60] dark:text-[#9A9690] uppercase tracking-wide">
+                                            <th key={d} className="px-2 py-3 text-center text-xs font-semibold text-[#595c57] dark:text-[#8a9089] uppercase tracking-wide">
                                                 {d.substring(0,2)}
                                             </th>
                                         ))}
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-clay-50 dark:divide-[#2A3427]">
+                                <tbody className="divide-y divide-[#f5f7f0] dark:divide-[#2A3427]">
                                     {users.map(u => (
-                                        <tr key={u.id} className="hover:bg-clay-50 dark:hover:bg-[#232B1F] transition-colors">
-                                            <td className="px-4 py-3 font-medium text-[#1C1A16] dark:text-[#F0EDE5]">{u.name}</td>
+                                        <tr key={u.id} className="hover:bg-[#f5f7f0] dark:hover:bg-[#232B1F] transition-colors">
+                                            <td className="px-4 py-3 font-medium text-[#2c302b] dark:text-[#e6ede6]">{u.name}</td>
                                             {displayDays.map(d => (
                                                 <td key={d} className="px-2 py-3">
                                                     <div className="flex flex-col gap-1 items-center">
@@ -367,8 +367,8 @@ export const GenerationModal = ({
                                                                     onClick={() => toggleAtt(u.id, key)}
                                                                     className={`w-4 h-4 rounded transition-all duration-150
                                                                         ${isOn
-                                                                            ? 'bg-forest-500 dark:bg-[#4FC475]'
-                                                                            : 'bg-clay-200 dark:bg-[#2A3427] hover:bg-clay-300'
+                                                                            ? 'bg-[#426500] dark:bg-[#b8fd4b]'
+                                                                            : 'bg-[#e6e9e1] dark:bg-[#2c3a2c] hover:bg-[#d1d6cd]'
                                                                         }`}
                                                                     title={`${d} ${type}`}
                                                                 />
@@ -384,7 +384,7 @@ export const GenerationModal = ({
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between px-5 py-4 border-t border-clay-100 dark:border-[#2A3427] shrink-0">
+                    <div className="flex items-center justify-between px-5 py-4 border-t border-[#e6e9e1] dark:border-[#2c3a2c] shrink-0">
                         <button onClick={() => setStep(1)} className="btn-ghost gap-1.5">
                             <ChevronLeft size={16} /> Zurück
                         </button>
@@ -433,9 +433,9 @@ export const ReplacementModal = ({
                 <ModalHeader title="Mahlzeiten hinzufügen" sub="Wähle Rezepte und weise sie Tagen zu" onClose={onClose} />
 
                 {/* Day + meal type selector */}
-                <div className="px-5 pt-4 pb-3 border-b border-clay-100 dark:border-[#2A3427] space-y-3">
+                <div className="px-5 pt-4 pb-3 border-b border-[#e6e9e1] dark:border-[#2c3a2c] space-y-3">
                     <div>
-                        <p className="text-xs font-semibold text-[#A38E72] dark:text-[#6B6762] uppercase tracking-wide mb-1.5">Tag</p>
+                        <p className="text-xs font-semibold text-[#959b8e] dark:text-[#6a7069] uppercase tracking-wide mb-1.5">Tag</p>
                         <div className="flex gap-1.5 flex-wrap">
                             {(planDays || []).map(day => (
                                 <button
@@ -443,8 +443,8 @@ export const ReplacementModal = ({
                                     onClick={() => setTargetDay(day)}
                                     className={`px-3 py-1 rounded-full text-xs font-medium border transition-all
                                         ${targetDay === day
-                                            ? 'bg-forest-500 dark:bg-[#4FC475] text-white dark:text-[#071B10] border-forest-500 dark:border-[#4FC475]'
-                                            : 'bg-white dark:bg-[#1C231A] text-[#6E6A60] dark:text-[#9A9690] border-clay-200 dark:border-[#2A3427] hover:border-forest-400'
+                                            ? 'bg-[#426500] dark:bg-[#b8fd4b] text-white dark:text-[#3d5e00] border-[#426500] dark:border-[#b8fd4b]'
+                                            : 'bg-white dark:bg-[#1e2a1e] text-[#595c57] dark:text-[#8a9089] border-[#c4c8be] dark:border-[#2c3a2c] hover:border-[#b8fd4b]'
                                         }`}
                                 >
                                     {day}
@@ -453,7 +453,7 @@ export const ReplacementModal = ({
                         </div>
                     </div>
                     <div>
-                        <p className="text-xs font-semibold text-[#A38E72] dark:text-[#6B6762] uppercase tracking-wide mb-1.5">Mahlzeit</p>
+                        <p className="text-xs font-semibold text-[#959b8e] dark:text-[#6a7069] uppercase tracking-wide mb-1.5">Mahlzeit</p>
                         <div className="flex gap-1.5 flex-wrap">
                             {ADD_MEAL_TYPES.map(mt => (
                                 <button
@@ -461,8 +461,8 @@ export const ReplacementModal = ({
                                     onClick={() => setTargetMealType(mt)}
                                     className={`px-3 py-1 rounded-full text-xs font-medium border transition-all
                                         ${targetMealType === mt
-                                            ? 'bg-forest-500 dark:bg-[#4FC475] text-white dark:text-[#071B10] border-forest-500 dark:border-[#4FC475]'
-                                            : 'bg-white dark:bg-[#1C231A] text-[#6E6A60] dark:text-[#9A9690] border-clay-200 dark:border-[#2A3427] hover:border-forest-400'
+                                            ? 'bg-[#426500] dark:bg-[#b8fd4b] text-white dark:text-[#3d5e00] border-[#426500] dark:border-[#b8fd4b]'
+                                            : 'bg-white dark:bg-[#1e2a1e] text-[#595c57] dark:text-[#8a9089] border-[#c4c8be] dark:border-[#2c3a2c] hover:border-[#b8fd4b]'
                                         }`}
                                 >
                                     {mt}
@@ -481,23 +481,23 @@ export const ReplacementModal = ({
                                     key={idx}
                                     className={`relative p-4 rounded-xl border transition-all
                                         ${isAdded
-                                            ? 'border-forest-400 dark:border-[#4FC475] bg-forest-50 dark:bg-[rgba(79,196,117,0.06)]'
-                                            : 'border-clay-200 dark:border-[#2A3427]'
+                                            ? 'border-[#b8fd4b] dark:border-[#b8fd4b] bg-[#eff2ea] dark:bg-[rgba(66,101,0,0.06)]'
+                                            : 'border-[#c4c8be] dark:border-[#2c3a2c]'
                                         }`}
                                 >
                                     <div className="flex items-start justify-between gap-2 mb-2">
-                                        <h4 className="font-semibold text-[#1C1A16] dark:text-[#F0EDE5] leading-snug flex-1">
+                                        <h4 className="font-semibold text-[#2c302b] dark:text-[#e6ede6] leading-snug flex-1">
                                             {recipe.name}
                                         </h4>
                                         {isAdded ? (
-                                            <span className="shrink-0 flex items-center gap-1 text-xs font-semibold text-forest-600 dark:text-[#4FC475]">
+                                            <span className="shrink-0 flex items-center gap-1 text-xs font-semibold text-[#395800] dark:text-[#b8fd4b]">
                                                 <Check size={13} /> Hinzugefügt
                                             </span>
                                         ) : (
                                             <button
                                                 onClick={() => handleAdd(recipe)}
                                                 disabled={!targetDay}
-                                                className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-forest-500 dark:bg-[#4FC475] text-white dark:text-[#071B10] text-xs font-semibold hover:bg-forest-600 dark:hover:bg-[#3AB560] transition-colors disabled:opacity-40"
+                                                className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#426500] dark:bg-[#b8fd4b] text-white dark:text-[#3d5e00] text-xs font-semibold hover:bg-[#395800] dark:hover:bg-[#3AB560] transition-colors disabled:opacity-40"
                                             >
                                                 <Plus size={12} /> Hinzufügen
                                             </button>
@@ -510,7 +510,7 @@ export const ReplacementModal = ({
                                             <span key={t} className={`tag-chip ${t.toLowerCase() === 'thermomix' ? 'tag-chip-purple' : ''}`}>{t}</span>
                                         ))}
                                     </div>
-                                    <p className="text-xs text-[#A38E72] dark:text-[#6B6762] line-clamp-2">
+                                    <p className="text-xs text-[#959b8e] dark:text-[#6a7069] line-clamp-2">
                                         {recipe.ingredients.map(i => i.name).join(', ')}
                                     </p>
                                 </div>
@@ -519,7 +519,7 @@ export const ReplacementModal = ({
                     </div>
                 </div>
 
-                <div className="px-5 py-4 border-t border-clay-100 dark:border-[#2A3427] shrink-0">
+                <div className="px-5 py-4 border-t border-[#e6e9e1] dark:border-[#2c3a2c] shrink-0">
                     <button onClick={onClose} className="btn-primary w-full">Fertig</button>
                 </div>
             </ModalShell>
@@ -536,14 +536,14 @@ export const ReplacementModal = ({
                         <button
                             key={idx}
                             onClick={() => onSelect(recipe)}
-                            className="text-left p-4 rounded-xl border border-clay-200 dark:border-[#2A3427] hover:border-forest-400 dark:hover:border-[#4FC475] hover:bg-forest-50 dark:hover:bg-[rgba(79,196,117,0.06)] transition-all group"
+                            className="text-left p-4 rounded-xl border border-[#c4c8be] dark:border-[#2c3a2c] hover:border-[#b8fd4b] dark:hover:border-[#4FC475] hover:bg-[#eff2ea] dark:hover:bg-[rgba(79,196,117,0.06)] transition-all group"
                         >
                             <div className="flex items-start justify-between gap-2 mb-2">
-                                <h4 className="font-semibold text-[#1C1A16] dark:text-[#F0EDE5] leading-snug group-hover:text-forest-700 dark:group-hover:text-[#4FC475] transition-colors">
+                                <h4 className="font-semibold text-[#2c302b] dark:text-[#e6ede6] leading-snug group-hover:text-[#395800] dark:group-hover:text-[#4FC475] transition-colors">
                                     {recipe.name}
                                 </h4>
-                                <div className="shrink-0 w-6 h-6 rounded-full bg-forest-50 dark:bg-[rgba(79,196,117,0.12)] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                                    <Check size={12} className="text-forest-500 dark:text-[#4FC475]" />
+                                <div className="shrink-0 w-6 h-6 rounded-full bg-[#eff2ea] dark:bg-[rgba(66,101,0,0.12)] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                                    <Check size={12} className="text-[#426500] dark:text-[#b8fd4b]" />
                                 </div>
                             </div>
                             <div className="flex flex-wrap gap-1.5 mb-2">
@@ -553,7 +553,7 @@ export const ReplacementModal = ({
                                     <span key={t} className={`tag-chip ${t.toLowerCase() === 'thermomix' ? 'tag-chip-purple' : ''}`}>{t}</span>
                                 ))}
                             </div>
-                            <p className="text-xs text-[#A38E72] dark:text-[#6B6762] line-clamp-2">
+                            <p className="text-xs text-[#959b8e] dark:text-[#6a7069] line-clamp-2">
                                 {recipe.ingredients.map(i => i.name).join(', ')}
                             </p>
                         </button>
@@ -561,7 +561,7 @@ export const ReplacementModal = ({
                 </div>
             </div>
 
-            <div className="px-5 py-4 border-t border-clay-100 dark:border-[#2A3427] shrink-0">
+            <div className="px-5 py-4 border-t border-[#e6e9e1] dark:border-[#2c3a2c] shrink-0">
                 <button onClick={onClose} className="btn-ghost w-full">Abbrechen</button>
             </div>
         </ModalShell>
@@ -585,8 +585,8 @@ export const FavoritePickerModal = ({
         <div className="flex-1 overflow-y-auto p-5">
             {favorites.length === 0 ? (
                 <div className="py-12 flex flex-col items-center text-center">
-                    <Heart className="h-10 w-10 text-clay-200 dark:text-[#2A3427] mb-3" />
-                    <p className="text-[#6E6A60] dark:text-[#9A9690]">Keine Favoriten vorhanden.</p>
+                    <Heart className="h-10 w-10 text-[#c4c8be] dark:text-[#2A3427] mb-3" />
+                    <p className="text-[#595c57] dark:text-[#8a9089]">Keine Favoriten vorhanden.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -594,10 +594,10 @@ export const FavoritePickerModal = ({
                         <button
                             key={idx}
                             onClick={() => onSelect(recipe)}
-                            className="text-left p-4 rounded-xl border border-clay-200 dark:border-[#2A3427] hover:border-forest-400 dark:hover:border-[#4FC475] hover:bg-forest-50 dark:hover:bg-[rgba(79,196,117,0.06)] transition-all group"
+                            className="text-left p-4 rounded-xl border border-[#c4c8be] dark:border-[#2c3a2c] hover:border-[#b8fd4b] dark:hover:border-[#4FC475] hover:bg-[#eff2ea] dark:hover:bg-[rgba(79,196,117,0.06)] transition-all group"
                         >
                             <div className="flex items-start justify-between gap-1 mb-2">
-                                <h4 className="font-semibold text-sm text-[#1C1A16] dark:text-[#F0EDE5] line-clamp-2 leading-snug group-hover:text-forest-700 dark:group-hover:text-[#4FC475] transition-colors">
+                                <h4 className="font-semibold text-sm text-[#2c302b] dark:text-[#e6ede6] line-clamp-2 leading-snug group-hover:text-[#395800] dark:group-hover:text-[#4FC475] transition-colors">
                                     {recipe.name}
                                 </h4>
                                 <Heart className="shrink-0 h-3.5 w-3.5 fill-red-400 text-red-400 mt-0.5" />
@@ -610,7 +610,7 @@ export const FavoritePickerModal = ({
                                     <span key={t} className="tag-chip tag-chip-purple text-[10px] py-0.5">{t}</span>
                                 ))}
                             </div>
-                            <p className="text-[11px] text-[#A38E72] dark:text-[#6B6762] line-clamp-2">
+                            <p className="text-[11px] text-[#959b8e] dark:text-[#6a7069] line-clamp-2">
                                 {recipe.ingredients.map(i => i.name).join(', ')}
                             </p>
                         </button>
@@ -633,19 +633,19 @@ export const RecipeDetailModal = ({
 }) => (
     <ModalShell onClose={onClose} maxWidth="max-w-lg">
         <div className="flex items-center justify-between px-5 pt-5 pb-0 shrink-0">
-            <span className="text-[10px] font-bold text-forest-500 dark:text-[#4FC475] uppercase tracking-widest">
+            <span className="text-[10px] font-bold text-[#426500] dark:text-[#b8fd4b] uppercase tracking-widest">
                 Rezept
             </span>
             <div className="flex items-center gap-1">
                 <button
                     onClick={() => onUpdate({ isFavorite: !recipe.isFavorite })}
-                    className={`p-2 rounded-xl transition-all ${recipe.isFavorite ? 'text-red-500 bg-red-50 dark:bg-red-900/20' : 'text-clay-300 dark:text-[#3A4635] hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10'}`}
+                    className={`p-2 rounded-xl transition-all ${recipe.isFavorite ? 'text-red-500 bg-red-50 dark:bg-red-900/20' : 'text-[#c4c8be] dark:text-[#3a4835] hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10'}`}
                 >
                     <Heart size={20} className={recipe.isFavorite ? 'fill-red-500' : ''} />
                 </button>
                 <button
                     onClick={onClose}
-                    className="p-2 rounded-xl text-[#A38E72] hover:text-[#1C1A16] dark:hover:text-[#F0EDE5] hover:bg-clay-100 dark:hover:bg-[#232B1F] transition-colors"
+                    className="p-2 rounded-xl text-[#959b8e] hover:text-[#2c302b] dark:hover:text-[#F0EDE5] hover:bg-[#eff2ea] dark:hover:bg-[#232B1F] transition-colors"
                 >
                     <X size={18} />
                 </button>
@@ -654,25 +654,25 @@ export const RecipeDetailModal = ({
 
         <div className="flex-1 overflow-y-auto px-5 pt-2 pb-5 space-y-5">
             {/* Title */}
-            <h2 className="font-display text-2xl font-bold text-[#1C1A16] dark:text-[#F0EDE5] leading-tight">
+            <h2 className="font-sans text-2xl font-bold text-[#2c302b] dark:text-[#e6ede6] leading-tight">
                 {recipe.name}
             </h2>
 
             {/* Stats row */}
-            <div className="flex items-center gap-4 py-3 border-y border-clay-100 dark:border-[#2A3427]">
+            <div className="flex items-center gap-4 py-3 border-y border-[#e6e9e1] dark:border-[#2c3a2c]">
                 <div>
-                    <p className="text-[10px] font-bold text-[#A38E72] dark:text-[#6B6762] uppercase tracking-wide mb-1">Bewertung</p>
+                    <p className="text-[10px] font-bold text-[#959b8e] dark:text-[#6a7069] uppercase tracking-wide mb-1">Bewertung</p>
                     <StarRating rating={recipe.rating || 0} onRate={r => onUpdate({ rating: r })} size={18} />
                 </div>
-                <div className="w-px h-8 bg-clay-100 dark:bg-[#2A3427]" />
+                <div className="w-px h-8 bg-[#eff2ea] dark:bg-[#2c3a2c]" />
                 <div>
-                    <p className="text-[10px] font-bold text-[#A38E72] dark:text-[#6B6762] uppercase tracking-wide mb-1">Kalorien</p>
-                    <p className="font-bold text-[#1C1A16] dark:text-[#F0EDE5]">{recipe.calories} kcal</p>
+                    <p className="text-[10px] font-bold text-[#959b8e] dark:text-[#6a7069] uppercase tracking-wide mb-1">Kalorien</p>
+                    <p className="font-bold text-[#2c302b] dark:text-[#e6ede6]">{recipe.calories} kcal</p>
                 </div>
-                <div className="w-px h-8 bg-clay-100 dark:bg-[#2A3427]" />
+                <div className="w-px h-8 bg-[#eff2ea] dark:bg-[#2c3a2c]" />
                 <div>
-                    <p className="text-[10px] font-bold text-[#A38E72] dark:text-[#6B6762] uppercase tracking-wide mb-1">Dauer</p>
-                    <p className="font-bold text-[#1C1A16] dark:text-[#F0EDE5] flex items-center gap-1">
+                    <p className="text-[10px] font-bold text-[#959b8e] dark:text-[#6a7069] uppercase tracking-wide mb-1">Dauer</p>
+                    <p className="font-bold text-[#2c302b] dark:text-[#e6ede6] flex items-center gap-1">
                         <Clock size={13} />{recipe.cookingTime || 30}m
                     </p>
                 </div>
@@ -694,14 +694,14 @@ export const RecipeDetailModal = ({
 
             {/* Ingredients */}
             <div>
-                <h3 className="text-sm font-semibold text-[#1C1A16] dark:text-[#F0EDE5] mb-2.5 flex items-center gap-2">
-                    <ShoppingCart size={15} className="text-forest-500 dark:text-[#4FC475]" /> Zutaten
+                <h3 className="text-sm font-semibold text-[#2c302b] dark:text-[#e6ede6] mb-2.5 flex items-center gap-2">
+                    <ShoppingCart size={15} className="text-[#426500] dark:text-[#b8fd4b]" /> Zutaten
                 </h3>
                 <div className="grid grid-cols-2 gap-2">
                     {recipe.ingredients.map((ing, i) => (
-                        <div key={i} className="text-sm bg-clay-50 dark:bg-[#232B1F] p-2.5 rounded-lg border border-clay-100 dark:border-[#2A3427]">
-                            <span className="font-bold text-[#1C1A16] dark:text-[#F0EDE5]">{ing.amount} {ing.unit}</span>
-                            <span className="text-[#6E6A60] dark:text-[#9A9690]"> {ing.name}</span>
+                        <div key={i} className="text-sm bg-[#f5f7f0] dark:bg-[#1e2a1e] p-2.5 rounded-lg border border-[#e6e9e1] dark:border-[#2c3a2c]">
+                            <span className="font-bold text-[#2c302b] dark:text-[#e6ede6]">{ing.amount} {ing.unit}</span>
+                            <span className="text-[#595c57] dark:text-[#8a9089]"> {ing.name}</span>
                         </div>
                     ))}
                 </div>
@@ -709,16 +709,16 @@ export const RecipeDetailModal = ({
 
             {/* Instructions */}
             <div>
-                <h3 className="text-sm font-semibold text-[#1C1A16] dark:text-[#F0EDE5] mb-2.5 flex items-center gap-2">
-                    <ChefHat size={15} className="text-forest-500 dark:text-[#4FC475]" /> Zubereitung
+                <h3 className="text-sm font-semibold text-[#2c302b] dark:text-[#e6ede6] mb-2.5 flex items-center gap-2">
+                    <ChefHat size={15} className="text-[#426500] dark:text-[#b8fd4b]" /> Zubereitung
                 </h3>
                 <ol className="space-y-3">
                     {recipe.instructions.map((step, i) => (
-                        <li key={i} className="flex gap-3 text-sm text-[#1C1A16] dark:text-[#F0EDE5]">
-                            <span className="shrink-0 w-6 h-6 rounded-full bg-forest-500 dark:bg-[#4FC475] text-white dark:text-[#071B10] flex items-center justify-center text-[11px] font-bold mt-0.5">
+                        <li key={i} className="flex gap-3 text-sm text-[#2c302b] dark:text-[#e6ede6]">
+                            <span className="shrink-0 w-6 h-6 rounded-full bg-[#426500] dark:bg-[#b8fd4b] text-white dark:text-[#3d5e00] flex items-center justify-center text-[11px] font-bold mt-0.5">
                                 {i + 1}
                             </span>
-                            <p className="leading-relaxed text-[#1C1A16] dark:text-[#F0EDE5]">{step}</p>
+                            <p className="leading-relaxed text-[#2c302b] dark:text-[#e6ede6]">{step}</p>
                         </li>
                     ))}
                 </ol>
@@ -805,15 +805,15 @@ export const RecipeImportModal = ({
 
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
                 {/* Tab switcher */}
-                <div className="flex gap-1 bg-clay-50 dark:bg-[#232B1F] p-1 rounded-xl border border-clay-100 dark:border-[#2A3427]">
+                <div className="flex gap-1 bg-[#f5f7f0] dark:bg-[#1e2a1e] p-1 rounded-xl border border-[#e6e9e1] dark:border-[#2c3a2c]">
                     {tabs.map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => { setActiveTab(tab.id); setError(null); }}
                             className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium transition-all
                                 ${activeTab === tab.id
-                                    ? 'bg-white dark:bg-[#1C231A] text-[#1C1A16] dark:text-[#F0EDE5] shadow-sm border border-clay-100 dark:border-[#2A3427]'
-                                    : 'text-[#6E6A60] dark:text-[#9A9690] hover:text-[#1C1A16] dark:hover:text-[#F0EDE5]'
+                                    ? 'bg-white dark:bg-[#1e2a1e] text-[#2c302b] dark:text-[#e6ede6] shadow-sm border border-[#e6e9e1] dark:border-[#2c3a2c]'
+                                    : 'text-[#595c57] dark:text-[#8a9089] hover:text-[#2c302b] dark:hover:text-[#F0EDE5]'
                                 }`}
                         >
                             {tab.icon} {tab.label}
@@ -824,7 +824,7 @@ export const RecipeImportModal = ({
                 {/* Tab content */}
                 {activeTab === 'text' && (
                     <div>
-                        <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">
+                        <label className="block text-sm font-medium text-[#2c302b] dark:text-[#e6ede6] mb-1.5">
                             Rezepttext einfügen
                         </label>
                         <textarea
@@ -839,7 +839,7 @@ export const RecipeImportModal = ({
 
                 {activeTab === 'url' && (
                     <div>
-                        <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">
+                        <label className="block text-sm font-medium text-[#2c302b] dark:text-[#e6ede6] mb-1.5">
                             Rezept-URL
                         </label>
                         <input
@@ -848,7 +848,7 @@ export const RecipeImportModal = ({
                             value={urlInput}
                             onChange={e => setUrlInput(e.target.value)}
                         />
-                        <p className="text-xs text-[#A38E72] dark:text-[#6B6762] mt-2">
+                        <p className="text-xs text-[#959b8e] dark:text-[#6a7069] mt-2">
                             Hinweis: Manche Websites verhindern das direkte Laden. Falls das nicht klappt, kopiere den Rezepttext und nutze die "Text"-Option.
                         </p>
                     </div>
@@ -856,23 +856,23 @@ export const RecipeImportModal = ({
 
                 {activeTab === 'image' && (
                     <div>
-                        <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">
+                        <label className="block text-sm font-medium text-[#2c302b] dark:text-[#e6ede6] mb-1.5">
                             Rezeptbild hochladen
                         </label>
                         {imagePreview ? (
                             <div className="relative">
-                                <img src={imagePreview} alt="Vorschau" className="w-full max-h-48 object-contain rounded-xl border border-clay-100 dark:border-[#2A3427] bg-clay-50 dark:bg-[#232B1F]" />
+                                <img src={imagePreview} alt="Vorschau" className="w-full max-h-48 object-contain rounded-xl border border-[#e6e9e1] dark:border-[#2c3a2c] bg-[#f5f7f0] dark:bg-[#1e2a1e]" />
                                 <button
                                     onClick={() => { setImageFile(null); setImagePreview(''); setImageBase64(''); }}
-                                    className="absolute top-2 right-2 p-1.5 bg-white dark:bg-[#1C231A] rounded-lg border border-clay-200 dark:border-[#2A3427] text-[#A38E72] hover:text-red-500 transition-colors"
+                                    className="absolute top-2 right-2 p-1.5 bg-white dark:bg-[#1e2a1e] rounded-lg border border-[#c4c8be] dark:border-[#2c3a2c] text-[#959b8e] hover:text-red-500 transition-colors"
                                 >
                                     <X size={14} />
                                 </button>
                             </div>
                         ) : (
-                            <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-clay-200 dark:border-[#2A3427] rounded-xl cursor-pointer hover:border-forest-400 dark:hover:border-[#4FC475] hover:bg-forest-50 dark:hover:bg-[rgba(79,196,117,0.04)] transition-all">
-                                <Upload size={28} className="text-clay-300 dark:text-[#3A4635]" />
-                                <span className="text-sm text-[#6E6A60] dark:text-[#9A9690]">Bild auswählen oder hierher ziehen</span>
+                            <label className="flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed border-[#c4c8be] dark:border-[#2c3a2c] rounded-xl cursor-pointer hover:border-[#b8fd4b] dark:hover:border-[#4FC475] hover:bg-[#eff2ea] dark:hover:bg-[rgba(79,196,117,0.04)] transition-all">
+                                <Upload size={28} className="text-[#c4c8be] dark:text-[#3a4835]" />
+                                <span className="text-sm text-[#595c57] dark:text-[#8a9089]">Bild auswählen oder hierher ziehen</span>
                                 <input type="file" accept="image/*" className="sr-only" onChange={handleFileChange} />
                             </label>
                         )}
@@ -887,7 +887,7 @@ export const RecipeImportModal = ({
                 )}
             </div>
 
-            <div className="flex justify-end gap-3 px-5 py-4 border-t border-clay-100 dark:border-[#2A3427] shrink-0">
+            <div className="flex justify-end gap-3 px-5 py-4 border-t border-[#e6e9e1] dark:border-[#2c3a2c] shrink-0">
                 <button onClick={onClose} className="btn-ghost" disabled={isLoading}>Abbrechen</button>
                 <button onClick={handleImport} className="btn-primary gap-2" disabled={isLoading}>
                     {isLoading ? <><Loader2 size={16} className="animate-spin" /> Importiere…</> : <><Upload size={16} /> Importieren</>}
@@ -930,15 +930,15 @@ export const AddMealModal = ({
                         <button
                             key={label}
                             onClick={() => label === 'Reste' ? onSelectSource('Reste', 'auto') : setSelectedMealType(label)}
-                            className="w-full flex items-center gap-4 p-4 rounded-xl border border-clay-200 dark:border-[#2A3427] hover:border-forest-400 dark:hover:border-[#4FC475] hover:bg-forest-50 dark:hover:bg-[rgba(79,196,117,0.06)] transition-all group"
+                            className="w-full flex items-center gap-4 p-4 rounded-xl border border-[#c4c8be] dark:border-[#2c3a2c] hover:border-[#b8fd4b] dark:hover:border-[#4FC475] hover:bg-[#eff2ea] dark:hover:bg-[rgba(79,196,117,0.06)] transition-all group"
                         >
                             <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-sm font-semibold ${pill}`}>
                                 {icon}
                             </span>
-                            <span className="font-semibold text-[#1C1A16] dark:text-[#F0EDE5] group-hover:text-forest-600 dark:group-hover:text-[#4FC475] transition-colors">
+                            <span className="font-semibold text-[#2c302b] dark:text-[#e6ede6] group-hover:text-[#395800] dark:group-hover:text-[#4FC475] transition-colors">
                                 {label}
                             </span>
-                            <ArrowRight size={16} className="ml-auto text-clay-300 dark:text-[#3A4635] group-hover:text-forest-400 dark:group-hover:text-[#4FC475] transition-colors" />
+                            <ArrowRight size={16} className="ml-auto text-[#c4c8be] dark:text-[#3a4835] group-hover:text-[#426500] dark:group-hover:text-[#4FC475] transition-colors" />
                         </button>
                     ))
                 ) : (
@@ -946,31 +946,31 @@ export const AddMealModal = ({
                     <>
                         <button
                             onClick={() => onSelectSource(selectedMealType, 'favorites')}
-                            className="w-full flex items-center gap-4 p-4 rounded-xl border border-clay-200 dark:border-[#2A3427] hover:border-amber-400 dark:hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-all group"
+                            className="w-full flex items-center gap-4 p-4 rounded-xl border border-[#c4c8be] dark:border-[#2c3a2c] hover:border-amber-400 dark:hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-all group"
                         >
                             <span className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center shrink-0">
                                 <Bookmark size={18} className="text-amber-600 dark:text-amber-400" />
                             </span>
                             <div className="text-left">
-                                <p className="font-semibold text-[#1C1A16] dark:text-[#F0EDE5]">Aus Favoriten</p>
-                                <p className="text-xs text-[#6E6A60] dark:text-[#9A9690]">Gespeichertes Rezept auswählen</p>
+                                <p className="font-semibold text-[#2c302b] dark:text-[#e6ede6]">Aus Favoriten</p>
+                                <p className="text-xs text-[#595c57] dark:text-[#8a9089]">Gespeichertes Rezept auswählen</p>
                             </div>
                         </button>
                         <button
                             onClick={() => onSelectSource(selectedMealType, 'ai')}
-                            className="w-full flex items-center gap-4 p-4 rounded-xl border border-clay-200 dark:border-[#2A3427] hover:border-forest-400 dark:hover:border-[#4FC475] hover:bg-forest-50 dark:hover:bg-[rgba(79,196,117,0.06)] transition-all group"
+                            className="w-full flex items-center gap-4 p-4 rounded-xl border border-[#c4c8be] dark:border-[#2c3a2c] hover:border-[#b8fd4b] dark:hover:border-[#4FC475] hover:bg-[#eff2ea] dark:hover:bg-[rgba(79,196,117,0.06)] transition-all group"
                         >
-                            <span className="w-10 h-10 rounded-xl bg-forest-50 dark:bg-[rgba(79,196,117,0.12)] flex items-center justify-center shrink-0">
-                                <Sparkles size={18} className="text-forest-500 dark:text-[#4FC475]" />
+                            <span className="w-10 h-10 rounded-xl bg-[#eff2ea] dark:bg-[rgba(66,101,0,0.12)] flex items-center justify-center shrink-0">
+                                <Sparkles size={18} className="text-[#426500] dark:text-[#b8fd4b]" />
                             </span>
                             <div className="text-left">
-                                <p className="font-semibold text-[#1C1A16] dark:text-[#F0EDE5]">KI-Vorschläge</p>
-                                <p className="text-xs text-[#6E6A60] dark:text-[#9A9690]">5 Ideen generieren lassen</p>
+                                <p className="font-semibold text-[#2c302b] dark:text-[#e6ede6]">KI-Vorschläge</p>
+                                <p className="text-xs text-[#595c57] dark:text-[#8a9089]">5 Ideen generieren lassen</p>
                             </div>
                         </button>
                         <button
                             onClick={() => setSelectedMealType(null)}
-                            className="w-full text-sm text-[#A38E72] dark:text-[#6B6762] hover:text-[#1C1A16] dark:hover:text-[#F0EDE5] transition-colors py-1"
+                            className="w-full text-sm text-[#959b8e] dark:text-[#6a7069] hover:text-[#2c302b] dark:hover:text-[#F0EDE5] transition-colors py-1"
                         >
                             ← Zurück
                         </button>
@@ -995,10 +995,10 @@ export const ResetConfirmModal = ({
             <div className="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-4">
                 <AlertTriangle className="h-7 w-7 text-red-500" />
             </div>
-            <h3 className="font-display text-xl font-bold text-[#1C1A16] dark:text-[#F0EDE5] mb-2">
+            <h3 className="font-sans text-xl font-bold text-[#2c302b] dark:text-[#e6ede6] mb-2">
                 Bist du sicher?
             </h3>
-            <p className="text-sm text-[#6E6A60] dark:text-[#9A9690] mb-6 leading-relaxed">
+            <p className="text-sm text-[#595c57] dark:text-[#8a9089] mb-6 leading-relaxed">
                 Diese Aktion löscht alle Daten unwiderruflich und setzt alles auf die Standardwerte zurück.
             </p>
             <div className="flex gap-3">

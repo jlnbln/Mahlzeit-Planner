@@ -68,19 +68,23 @@ const Dashboard: React.FC<DashboardProps> = ({
 
                     {/* Week navigator */}
                     <div className="flex items-center gap-2 mt-3">
-                        <div className="flex items-center bg-white dark:bg-[#1C231A] rounded-xl border border-clay-200 dark:border-[#2A3427] shadow-card overflow-hidden">
+                        <div className="flex items-center rounded-full overflow-hidden border"
+                             style={{ background: 'var(--c-surface)', borderColor: 'var(--c-border)' }}>
                             <button
                                 onClick={() => toggleViewDate('prev')}
-                                className="p-2.5 text-[#6E6A60] dark:text-[#9A9690] hover:bg-clay-50 dark:hover:bg-[#232B1F] hover:text-[#1C1A16] dark:hover:text-[#F0EDE5] transition-colors"
+                                className="p-2.5 transition-colors hover:bg-surface-container-low"
+                                style={{ color: 'var(--c-text-mid)' }}
                             >
                                 <ChevronLeft size={18} />
                             </button>
-                            <span className="px-3 py-2 text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] min-w-[155px] text-center">
+                            <span className="px-3 py-2 text-sm font-semibold min-w-[155px] text-center"
+                                  style={{ color: 'var(--c-text)' }}>
                                 {getWeekRangeString(currentViewDateIso)}
                             </span>
                             <button
                                 onClick={() => toggleViewDate('next')}
-                                className="p-2.5 text-[#6E6A60] dark:text-[#9A9690] hover:bg-clay-50 dark:hover:bg-[#232B1F] hover:text-[#1C1A16] dark:hover:text-[#F0EDE5] transition-colors"
+                                className="p-2.5 transition-colors hover:bg-surface-container-low"
+                                style={{ color: 'var(--c-text-mid)' }}
                             >
                                 <ChevronRight size={18} />
                             </button>
@@ -90,7 +94,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                             <button
                                 onClick={goToCurrentWeek}
                                 title="Zur aktuellen Woche"
-                                className="p-2.5 bg-white dark:bg-[#1C231A] border border-clay-200 dark:border-[#2A3427] rounded-xl shadow-card text-[#6E6A60] dark:text-[#9A9690] hover:text-forest-500 dark:hover:text-[#4FC475] transition-colors"
+                                className="p-2.5 rounded-full border transition-colors hover:bg-surface-container-low"
+                                style={{ background: 'var(--c-surface)', borderColor: 'var(--c-border)', color: 'var(--c-text-mid)' }}
                             >
                                 <RotateCcw size={16} />
                             </button>
@@ -101,25 +106,26 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <div className="flex items-center gap-3">
                     {/* Progress badge when plan exists */}
                     {activePlan && totalCount > 0 && (
-                        <div className="hidden sm:flex items-center gap-2 bg-white dark:bg-[#1C231A] border border-clay-200 dark:border-[#2A3427] rounded-xl px-3.5 py-2.5 shadow-card">
+                        <div className="hidden sm:flex items-center gap-2 rounded-2xl px-3.5 py-2.5 border"
+                             style={{ background: 'var(--c-surface)', borderColor: 'var(--c-border)' }}>
                             <div className="relative w-8 h-8">
                                 <svg className="w-8 h-8 -rotate-90" viewBox="0 0 32 32">
-                                    <circle cx="16" cy="16" r="12" fill="none" stroke="#E8DFD0" strokeWidth="3" className="dark:stroke-[#2A3427]" />
+                                    <circle cx="16" cy="16" r="12" fill="none" stroke="var(--c-surface-mid)" strokeWidth="3" />
                                     <circle
                                         cx="16" cy="16" r="12" fill="none"
-                                        stroke="#1A5C38" strokeWidth="3"
+                                        stroke="var(--c-primary)" strokeWidth="3"
                                         strokeDasharray={`${(completedCount / totalCount) * 75.4} 75.4`}
                                         strokeLinecap="round"
-                                        className="dark:stroke-[#4FC475] transition-all duration-500"
+                                        className="transition-all duration-500"
                                     />
                                 </svg>
-                                <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-forest-500 dark:text-[#4FC475]">
+                                <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold" style={{ color: 'var(--c-primary)' }}>
                                     {Math.round((completedCount / totalCount) * 100)}%
                                 </span>
                             </div>
                             <div>
-                                <p className="text-[10px] text-[#A38E72] dark:text-[#6B6762] uppercase font-semibold tracking-wide">Erledigt</p>
-                                <p className="text-sm font-semibold text-[#1C1A16] dark:text-[#F0EDE5] leading-none">{completedCount} / {totalCount}</p>
+                                <p className="text-[10px] uppercase font-bold tracking-wide" style={{ color: 'var(--c-text-dim)' }}>Erledigt</p>
+                                <p className="text-sm font-bold leading-none" style={{ color: 'var(--c-text)' }}>{completedCount} / {totalCount}</p>
                             </div>
                         </div>
                     )}
@@ -158,13 +164,14 @@ const Dashboard: React.FC<DashboardProps> = ({
             {!activePlan ? (
                 /* Empty state */
                 <div className="card p-12 flex flex-col items-center text-center animate-fade-in stagger-1">
-                    <div className="w-16 h-16 rounded-2xl bg-forest-50 dark:bg-[rgba(79,196,117,0.1)] flex items-center justify-center mb-4">
-                        <Sparkles className="h-7 w-7 text-forest-400 dark:text-[#4FC475]" />
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+                         style={{ background: 'var(--c-surface-low)' }}>
+                        <Sparkles className="h-7 w-7" style={{ color: 'var(--c-primary)' }} />
                     </div>
-                    <h3 className="font-display text-xl font-bold text-[#1C1A16] dark:text-[#F0EDE5] mb-2">
+                    <h3 className="text-xl font-extrabold mb-2" style={{ color: 'var(--c-text)' }}>
                         Noch kein Plan
                     </h3>
-                    <p className="text-sm text-[#6E6A60] dark:text-[#9A9690] max-w-xs mb-6">
+                    <p className="text-sm max-w-xs mb-6" style={{ color: 'var(--c-text-mid)' }}>
                         Erstelle deinen KI-generierten Wochenplan für diese Woche.
                     </p>
                     <div className="flex gap-3 flex-wrap justify-center">
@@ -200,22 +207,26 @@ const Dashboard: React.FC<DashboardProps> = ({
                             <div
                                 key={d.name}
                                 className={`card card-hover p-4 flex flex-col animate-fade-in
-                                    ${isToday ? 'ring-2 ring-forest-500/30 dark:ring-[#4FC475]/30' : ''}
+                                    ${isToday ? 'ring-2' : ''}
                                     ${allDone ? 'opacity-70' : ''}
                                 `}
-                                style={{ animationDelay: `${dIdx * 0.05}s` }}
+                                style={isToday ? { ringColor: 'rgba(66,101,0,0.3)' } : {}}
+                                data-today={isToday}
+                                {...(isToday ? { style: { outline: '2px solid rgba(184,253,75,0.7)', outlineOffset: '-2px' } } : {})}
                             >
                                 {/* Day header */}
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-2">
                                         {isToday && (
-                                            <span className="w-1.5 h-1.5 rounded-full bg-forest-500 dark:bg-[#4FC475]" />
+                                            <span className="w-2 h-2 rounded-full" style={{ background: '#b8fd4b' }} />
                                         )}
-                                        <span className={`font-semibold text-sm ${isToday ? 'text-forest-600 dark:text-[#4FC475]' : 'text-[#1C1A16] dark:text-[#F0EDE5]'}`}>
+                                        <span className="font-bold text-sm"
+                                              style={{ color: isToday ? 'var(--c-primary)' : 'var(--c-text)' }}>
                                             {d.name}
                                         </span>
                                     </div>
-                                    <span className="text-xs text-[#A38E72] dark:text-[#6B6762] bg-clay-100 dark:bg-[#232B1F] px-2 py-0.5 rounded-md font-medium">
+                                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                                          style={{ background: 'var(--c-surface-low)', color: 'var(--c-text-mid)' }}>
                                         {tileDate.getDate()}.{tileDate.getMonth()+1}.
                                     </span>
                                 </div>
@@ -230,17 +241,18 @@ const Dashboard: React.FC<DashboardProps> = ({
                                             return (
                                                 <div
                                                     key={mIdx}
-                                                    className={`flex items-center gap-2 p-1.5 rounded-lg transition-colors group
-                                                        hover:bg-clay-50 dark:hover:bg-[#232B1F]
+                                                    className={`flex items-center gap-2 p-1.5 rounded-xl transition-colors group
                                                         ${m.completed ? 'opacity-50' : ''}`}
+                                                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--c-surface-low)')}
+                                                    onMouseLeave={e => (e.currentTarget.style.background = '')}
                                                 >
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); onToggleMealCompletion(d.name, m.type); }}
                                                         className="shrink-0 transition-colors"
                                                     >
                                                         {m.completed
-                                                            ? <CheckCircle2 size={18} className="text-forest-500 dark:text-[#4FC475] fill-forest-100 dark:fill-[rgba(79,196,117,0.2)]" />
-                                                            : <Circle size={18} className="text-clay-300 dark:text-[#3A4635] group-hover:text-clay-400" />
+                                                            ? <CheckCircle2 size={18} style={{ color: 'var(--c-primary)', fill: 'rgba(184,253,75,0.3)' }} />
+                                                            : <Circle size={18} style={{ color: 'var(--c-border)' }} />
                                                         }
                                                     </button>
 
@@ -251,13 +263,11 @@ const Dashboard: React.FC<DashboardProps> = ({
                                                     <button
                                                         onClick={() => onSelectRecipe(m.recipe)}
                                                         className={`flex-1 text-left text-xs font-medium leading-snug truncate transition-colors
-                                                            ${m.completed
-                                                                ? 'line-through text-[#A38E72] dark:text-[#6B6762]'
-                                                                : 'text-[#1C1A16] dark:text-[#F0EDE5] group-hover:text-forest-600 dark:group-hover:text-[#4FC475]'
-                                                            }`}
+                                                            ${m.completed ? 'line-through' : ''}`}
+                                                        style={{ color: m.completed ? 'var(--c-text-dim)' : 'var(--c-text)' }}
                                                     >
                                                         {m.isLeftover && (
-                                                            <span className="text-[#6B4A8A] dark:text-[#C0A0E0] font-normal not-italic">Reste: </span>
+                                                            <span className="font-normal" style={{ color: '#6b4a8a' }}>Reste: </span>
                                                         )}
                                                         {m.recipe.name}
                                                         {m.recipe.isFavorite && (
@@ -270,14 +280,17 @@ const Dashboard: React.FC<DashboardProps> = ({
 
                                         <button
                                             onClick={() => { setActiveTabDay(d.name); setView('plan'); }}
-                                            className="w-full mt-1 text-[11px] text-center text-forest-500 dark:text-[#4FC475] hover:bg-forest-50 dark:hover:bg-[rgba(79,196,117,0.08)] py-1.5 rounded-lg transition-colors font-medium"
+                                            className="w-full mt-1 text-[11px] text-center py-1.5 rounded-lg transition-colors font-semibold"
+                                            style={{ color: 'var(--c-primary)' }}
+                                            onMouseEnter={e => (e.currentTarget.style.background = 'var(--c-surface-low)')}
+                                            onMouseLeave={e => (e.currentTarget.style.background = '')}
                                         >
                                             Details →
                                         </button>
                                     </div>
                                 ) : (
                                     <div className="flex-1 flex items-center justify-center">
-                                        <span className="text-xs text-clay-400 dark:text-[#6B6762] italic">Kein Plan</span>
+                                        <span className="text-xs italic" style={{ color: 'var(--c-text-faint)' }}>Kein Plan</span>
                                     </div>
                                 )}
                             </div>

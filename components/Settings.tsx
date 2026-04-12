@@ -14,7 +14,8 @@ interface SettingsProps {
 const Toggle = ({ on, onToggle }: { on: boolean; onToggle: () => void }) => (
     <button
         onClick={onToggle}
-        className={`toggle ${on ? 'on bg-forest-500 dark:bg-[#4FC475]' : 'bg-clay-200 dark:bg-[#2A3427]'}`}
+        className={`toggle ${on ? 'on' : ''}`}
+        style={{ background: on ? 'var(--c-primary)' : 'var(--c-border)' }}
         role="switch"
         aria-checked={on}
     >
@@ -25,8 +26,8 @@ const Toggle = ({ on, onToggle }: { on: boolean; onToggle: () => void }) => (
 const SettingRow = ({ label, sub, control }: { label: string; sub?: string; control: React.ReactNode }) => (
     <div className="flex items-center justify-between gap-4 py-3.5">
         <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5]">{label}</p>
-            {sub && <p className="text-xs text-[#A38E72] dark:text-[#6B6762] mt-0.5">{sub}</p>}
+            <p className="text-sm font-semibold" style={{ color: 'var(--c-text)' }}>{label}</p>
+            {sub && <p className="text-xs mt-0.5" style={{ color: 'var(--c-text-dim)' }}>{sub}</p>}
         </div>
         {control}
     </div>
@@ -34,11 +35,11 @@ const SettingRow = ({ label, sub, control }: { label: string; sub?: string; cont
 
 const Section = ({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) => (
     <div className="card overflow-hidden">
-        <div className="px-5 py-3 border-b border-clay-100 dark:border-[#2A3427] flex items-center gap-2 bg-clay-50 dark:bg-[#232B1F]">
-            <span className="text-[#6E6A60] dark:text-[#9A9690]">{icon}</span>
-            <h3 className="text-sm font-semibold text-[#1C1A16] dark:text-[#F0EDE5]">{title}</h3>
+        <div className="px-5 py-3 border-b flex items-center gap-2" style={{ background: 'var(--c-surface-low)', borderColor: 'var(--c-border-soft)' }}>
+            <span style={{ color: 'var(--c-text-mid)' }}>{icon}</span>
+            <h3 className="text-sm font-bold" style={{ color: 'var(--c-text)' }}>{title}</h3>
         </div>
-        <div className="px-5 divide-y divide-clay-50 dark:divide-[#232B1F]">
+        <div className="px-5 divide-y" style={{ borderColor: 'var(--c-bg)' }}>
             {children}
         </div>
     </div>
@@ -152,9 +153,12 @@ const SettingsView: React.FC<SettingsProps> = ({ settings, onUpdateSettings, onR
             <div className="card overflow-hidden">
                 <button
                     onClick={() => setShowDangerZone(!showDangerZone)}
-                    className="w-full px-5 py-3.5 flex items-center justify-between text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                    className="w-full px-5 py-3.5 flex items-center justify-between transition-colors"
+                    style={{ color: '#b3261e' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(179,38,30,0.06)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = '')}
                 >
-                    <span className="flex items-center gap-2 text-sm font-semibold">
+                    <span className="flex items-center gap-2 text-sm font-bold">
                         <AlertTriangle size={15} /> Gefahrenzone
                     </span>
                     <ChevronDown size={16} className={`transition-transform ${showDangerZone ? 'rotate-180' : ''}`} />
@@ -162,14 +166,17 @@ const SettingsView: React.FC<SettingsProps> = ({ settings, onUpdateSettings, onR
 
                 {showDangerZone && (
                     <div className="px-5 pb-5 animate-slide-up">
-                        <div className="p-4 border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-900/10 rounded-xl">
-                            <p className="text-xs text-red-700 dark:text-red-400 mb-3 flex items-start gap-2">
+                        <div className="p-4 rounded-2xl" style={{ border: '1px solid rgba(179,38,30,0.2)', background: '#fef0ee' }}>
+                            <p className="text-xs mb-3 flex items-start gap-2" style={{ color: '#b3261e' }}>
                                 <Database size={14} className="mt-0.5 shrink-0" />
                                 Dies löscht alle Benutzerprofile, Pläne und Rezepte unwiderruflich.
                             </p>
                             <button
                                 onClick={onRequestReset}
-                                className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition-colors"
+                                className="w-full py-2.5 rounded-full text-sm font-bold transition-colors text-white"
+                                style={{ background: '#b3261e' }}
+                                onMouseEnter={e => (e.currentTarget.style.background = '#93000a')}
+                                onMouseLeave={e => (e.currentTarget.style.background = '#b3261e')}
                             >
                                 Alles zurücksetzen
                             </button>

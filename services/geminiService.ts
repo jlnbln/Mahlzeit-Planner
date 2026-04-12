@@ -232,10 +232,26 @@ export const generateShoppingList = async (plan: WeeklyPlan, storeName: string):
 
 export const generateAlternativeRecipes = async (users: UserProfile[], currentRecipeName: string, mealType: string): Promise<Recipe[]> => {
     const ai = getClient();
-    
+
+    // Build dietary constraints from all household members
+    const dietaryConstraints = users
+        .map(u => {
+            const parts: string[] = [];
+            if (u.diet && u.diet !== 'Keine Einschränkung') parts.push(u.diet);
+            if (u.allergies) parts.push(`Allergien: ${u.allergies}`);
+            if (u.dislikes) parts.push(`mag nicht: ${u.dislikes}`);
+            return parts.length ? `${u.name}: ${parts.join(', ')}` : null;
+        })
+        .filter(Boolean);
+
+    const constraintsBlock = dietaryConstraints.length
+        ? `\nHousehold dietary requirements (MUST be respected for all recipes):\n${dietaryConstraints.join('\n')}\n`
+        : '';
+
     const prompt = `
-      The user wants to replace the recipe "${currentRecipeName}" for ${mealType}.
+      The user wants to ${currentRecipeName ? `replace the recipe "${currentRecipeName}" for` : 'add a new recipe for'} ${mealType}.
       Generate 5 DISTINCT, HEALTHY alternative recipes.
+      ${constraintsBlock}
     `;
 
     try {

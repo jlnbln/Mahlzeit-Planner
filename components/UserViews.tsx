@@ -38,14 +38,17 @@ export const UserList: React.FC<UserListProps> = ({ users, onAdd, onEdit }) => (
                 >
                     <div className="flex items-start justify-between mb-3">
                         <div>
-                            <h3 className="font-display text-lg font-bold text-[#1C1A16] dark:text-[#F0EDE5]">
+                            <h3 className="text-lg font-extrabold" style={{ color: 'var(--c-text)' }}>
                                 {user.name}
                             </h3>
-                            <p className="text-sm text-[#6E6A60] dark:text-[#9A9690] mt-0.5">{user.diet}</p>
+                            <p className="text-sm mt-0.5 font-medium" style={{ color: 'var(--c-text-mid)' }}>{user.diet}</p>
                         </div>
                         <button
                             onClick={() => onEdit(user)}
-                            className="p-2 rounded-xl text-[#A38E72] dark:text-[#6B6762] hover:text-forest-500 dark:hover:text-[#4FC475] hover:bg-forest-50 dark:hover:bg-[rgba(79,196,117,0.08)] transition-colors"
+                            className="p-2 rounded-xl transition-colors"
+                            style={{ color: 'var(--c-text-dim)' }}
+                            onMouseEnter={e => { e.currentTarget.style.color = 'var(--c-primary)'; e.currentTarget.style.background = 'var(--c-surface-low)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'var(--c-text-dim)'; e.currentTarget.style.background = ''; }}
                         >
                             <Edit2 size={16} />
                         </button>
@@ -95,21 +98,27 @@ export const UserEdit: React.FC<UserEditProps> = ({ tempUser, editingUserId, set
         <div className="max-w-2xl mx-auto space-y-5 animate-fade-in">
             <button
                 onClick={onCancel}
-                className="flex items-center gap-1.5 text-sm text-[#6E6A60] dark:text-[#9A9690] hover:text-forest-500 dark:hover:text-[#4FC475] transition-colors"
+                className="flex items-center gap-1.5 text-sm font-semibold transition-colors"
+                style={{ color: 'var(--c-text-mid)' }}
+                onMouseEnter={e => (e.currentTarget.style.color = 'var(--c-primary)')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'var(--c-text-mid)')}
             >
                 <ChevronLeft size={16} /> Zurück zur Übersicht
             </button>
 
             <div className="card p-6 sm:p-8">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-6 pb-5 border-b border-clay-100 dark:border-[#2A3427]">
-                    <h2 className="font-display text-2xl font-bold text-[#1C1A16] dark:text-[#F0EDE5]">
+                <div className="flex items-center justify-between mb-6 pb-5 border-b" style={{ borderColor: 'var(--c-border-soft)' }}>
+                    <h2 className="text-2xl font-extrabold" style={{ color: 'var(--c-text)', letterSpacing: '-0.02em' }}>
                         {editingUserId ? 'Profil bearbeiten' : 'Neues Profil'}
                     </h2>
                     {editingUserId && (
                         <button
                             onClick={() => onDelete(tempUser.id)}
-                            className="p-2 rounded-xl text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                            className="p-2 rounded-xl transition-colors"
+                            style={{ color: '#b3261e' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(179,38,30,0.08)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = ''; }}
                         >
                             <Trash2 size={18} />
                         </button>
@@ -120,7 +129,7 @@ export const UserEdit: React.FC<UserEditProps> = ({ tempUser, editingUserId, set
                     {/* Row 1: Name + Diet */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">Name</label>
+                            <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--c-text)' }}>Name</label>
                             <input
                                 type="text"
                                 value={tempUser.name}
@@ -129,7 +138,7 @@ export const UserEdit: React.FC<UserEditProps> = ({ tempUser, editingUserId, set
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">Ernährung</label>
+                            <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--c-text)' }}>Ernährung</label>
                             <select
                                 value={tempUser.diet}
                                 onChange={e => update('diet', e.target.value)}
@@ -143,7 +152,7 @@ export const UserEdit: React.FC<UserEditProps> = ({ tempUser, editingUserId, set
                     {/* Row 2: Goal + Kcal + Budget */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">Ziel</label>
+                            <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--c-text)' }}>Ziel</label>
                             <select
                                 value={tempUser.goal}
                                 onChange={e => update('goal', e.target.value)}
@@ -153,7 +162,7 @@ export const UserEdit: React.FC<UserEditProps> = ({ tempUser, editingUserId, set
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">Kcal Ziel</label>
+                            <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--c-text)' }}>Kcal Ziel</label>
                             <input
                                 type="number"
                                 value={tempUser.calories}
@@ -162,7 +171,7 @@ export const UserEdit: React.FC<UserEditProps> = ({ tempUser, editingUserId, set
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">Budget (€ / Woche)</label>
+                            <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--c-text)' }}>Budget (€ / Woche)</label>
                             <input
                                 type="number"
                                 value={tempUser.budget}
@@ -175,7 +184,7 @@ export const UserEdit: React.FC<UserEditProps> = ({ tempUser, editingUserId, set
                     {/* Row 3: Dislikes + Cuisine */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">Abneigungen / Unverträglichkeiten</label>
+                            <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--c-text)' }}>Abneigungen / Unverträglichkeiten</label>
                             <input
                                 type="text"
                                 placeholder="z.B. Pilze, Erdnüsse..."
@@ -185,7 +194,7 @@ export const UserEdit: React.FC<UserEditProps> = ({ tempUser, editingUserId, set
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-[#1C1A16] dark:text-[#F0EDE5] mb-1.5">Lieblingsküche</label>
+                            <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--c-text)' }}>Lieblingsküche</label>
                             <select
                                 value={tempUser.favoriteCuisine || 'Keine Präferenz'}
                                 onChange={e => update('favoriteCuisine', e.target.value)}
@@ -197,9 +206,9 @@ export const UserEdit: React.FC<UserEditProps> = ({ tempUser, editingUserId, set
                     </div>
 
                     {/* Attendance grid */}
-                    <div className="bg-clay-50 dark:bg-[#232B1F] rounded-xl p-4 border border-clay-100 dark:border-[#2A3427]">
-                        <h4 className="text-sm font-semibold text-[#1C1A16] dark:text-[#F0EDE5] mb-3 flex items-center gap-2">
-                            <Calendar size={15} className="text-forest-500 dark:text-[#4FC475]" />
+                    <div className="rounded-2xl p-4 border" style={{ background: 'var(--c-surface-low)', borderColor: 'var(--c-border-soft)' }}>
+                        <h4 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: 'var(--c-text)' }}>
+                            <Calendar size={15} style={{ color: 'var(--c-primary)' }} />
                             Standard-Anwesenheit
                         </h4>
                         <div className="grid grid-cols-7 gap-1">
@@ -207,7 +216,7 @@ export const UserEdit: React.FC<UserEditProps> = ({ tempUser, editingUserId, set
                                 const dayName = DAYS_OF_WEEK[dIdx];
                                 return (
                                     <div key={dayShort} className="flex flex-col items-center gap-1">
-                                        <span className="text-[10px] font-bold text-[#A38E72] dark:text-[#6B6762] mb-0.5">
+                                        <span className="text-[10px] font-bold mb-0.5" style={{ color: 'var(--c-text-dim)' }}>
                                             {dayShort}
                                         </span>
                                         {mealTypes.map((type, tIdx) => {
@@ -218,11 +227,11 @@ export const UserEdit: React.FC<UserEditProps> = ({ tempUser, editingUserId, set
                                                     key={key}
                                                     onClick={() => updateHomeTime(key, !isActive)}
                                                     title={`${dayName} ${type}`}
-                                                    className={`w-full aspect-square rounded-lg flex items-center justify-center text-[9px] font-bold transition-all duration-150
-                                                        ${isActive
-                                                            ? 'bg-forest-500 dark:bg-[#4FC475] text-white dark:text-[#071B10]'
-                                                            : 'bg-clay-200 dark:bg-[#2A3427] text-[#A38E72] dark:text-[#6B6762] hover:bg-clay-300'
-                                                        }`}
+                                                    className="w-full aspect-square rounded-lg flex items-center justify-center text-[9px] font-bold transition-all duration-150"
+                                                    style={isActive
+                                                        ? { background: '#b8fd4b', color: '#3d5e00' }
+                                                        : { background: '#e6e9e1', color: '#959b8e' }
+                                                    }
                                                 >
                                                     {mealInitials[tIdx]}
                                                 </button>
