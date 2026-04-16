@@ -311,9 +311,18 @@ Gib JSON mit exakt dieser Struktur zurück (alle Texte auf Deutsch, fehlende Wer
     }
 
     const data = await response.json();
-    const raw: string = data.choices[0].message.content;
+    const raw: string | null | undefined = data.choices?.[0]?.message?.content;
+    if (!raw) throw new Error('Keine Antwort vom Modell erhalten. Bitte erneut versuchen.');
     const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
-    return JSON.parse(cleaned) as Partial<Recipe>;
+    const parsed = JSON.parse(cleaned) as Partial<Recipe>;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        throw new Error('Ungültige Antwort vom Modell. Bitte erneut versuchen.');
+    }
+    // Normalize arrays — model occasionally returns strings instead of arrays
+    if (!Array.isArray(parsed.ingredients)) parsed.ingredients = [];
+    if (!Array.isArray(parsed.instructions)) parsed.instructions = [];
+    if (!Array.isArray(parsed.tags)) parsed.tags = [];
+    return parsed;
 };
 
 export const generateICalString = async (plan: WeeklyPlan): Promise<string> => {
