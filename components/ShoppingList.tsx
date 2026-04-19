@@ -53,7 +53,6 @@ const ShoppingListView: React.FC<ShoppingListProps> = ({ shoppingList, settings,
         setNewAmount('');
         setNewUnit('');
         setNewCategory(CATEGORIES[0]);
-        setShowAddForm(false);
     };
 
     const clearAll = () => {
@@ -116,19 +115,18 @@ const ShoppingListView: React.FC<ShoppingListProps> = ({ shoppingList, settings,
             {/* ── Add form ─────────────────────────────────── */}
             {showAddForm && (
                 <div className="card p-4 space-y-3">
+                    <input
+                        className="input-field"
+                        placeholder="Artikelname"
+                        value={newName}
+                        onChange={e => setNewName(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && addItem()}
+                        autoFocus
+                    />
                     <div className="flex gap-2">
                         <input
-                            className="input flex-1"
-                            placeholder="Artikelname"
-                            value={newName}
-                            onChange={e => setNewName(e.target.value)}
-                            onKeyDown={e => e.key === 'Enter' && addItem()}
-                            autoFocus
-                        />
-                    </div>
-                    <div className="flex gap-2">
-                        <input
-                            className="input w-20"
+                            className="input-field"
+                            style={{ width: '5rem' }}
                             placeholder="Menge"
                             type="number"
                             min="0"
@@ -136,13 +134,14 @@ const ShoppingListView: React.FC<ShoppingListProps> = ({ shoppingList, settings,
                             onChange={e => setNewAmount(e.target.value)}
                         />
                         <input
-                            className="input w-24"
+                            className="input-field"
+                            style={{ width: '6rem' }}
                             placeholder="Einheit"
                             value={newUnit}
                             onChange={e => setNewUnit(e.target.value)}
                         />
                         <select
-                            className="input flex-1"
+                            className="input-field"
                             value={newCategory}
                             onChange={e => setNewCategory(e.target.value)}
                         >
@@ -151,7 +150,7 @@ const ShoppingListView: React.FC<ShoppingListProps> = ({ shoppingList, settings,
                     </div>
                     <div className="flex gap-2 justify-end">
                         <button className="btn-secondary text-sm" onClick={() => setShowAddForm(false)}>
-                            Abbrechen
+                            Schließen
                         </button>
                         <button className="btn-primary text-sm" onClick={addItem} disabled={!newName.trim()}>
                             Hinzufügen
