@@ -340,9 +340,14 @@ function App() {
     setLoading(true);
     setLoadingMessage(`Einkaufsliste wird erstellt...`);
     try {
-      const list = await generateShoppingList(activePlan, settings.preferredStore);
-      setShoppingList(list);
-      saveToFirebase(users, plans, list, settings, savedRecipes);
+      const generated = await generateShoppingList(activePlan, settings.preferredStore);
+      const existing = shoppingList ?? { items: [], estimatedTotal: 0 };
+      const merged = {
+        items: [...existing.items, ...generated.items],
+        estimatedTotal: existing.estimatedTotal + generated.estimatedTotal,
+      };
+      setShoppingList(merged);
+      saveToFirebase(users, plans, merged, settings, savedRecipes);
       setView('shopping');
     } catch (error: any) {
       alert(`Fehler bei der Einkaufsliste: ${error.message || String(error)}`);
