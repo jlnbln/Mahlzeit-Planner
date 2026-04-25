@@ -73,6 +73,18 @@ Everything must be:
 You must return valid JSON strictly matching the schema requested.
 `;
 
+export const INVENTORY_CATEGORIES = [
+  'Obst & Gemüse',
+  'Molkereiprodukte & Kühlregal',
+  'Fleisch, Wurst & Fisch',
+  'Backwaren & Brot',
+  'Trockensortiment & Vorrat',
+  'Getränke',
+  'Tiefkühlkost',
+  'Gewürze & Grundzutaten',
+  'Sonstiges',
+];
+
 export const SHOPPING_CATEGORIES = [
   'Obst & Gemüse',
   'Kühlprodukte',

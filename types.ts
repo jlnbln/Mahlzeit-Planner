@@ -72,6 +72,7 @@ export interface MealSlot {
   eaters: string[]; // List of user IDs eating this
   completed?: boolean;
   isLeftover?: boolean; // Marks a Reste meal — recipe is shared with previous day's dinner
+  inventoryDeducted?: boolean; // True once ingredients have been subtracted from inventory
 }
 
 export interface DayPlan {
@@ -97,6 +98,19 @@ export interface ShoppingItem {
 export interface ShoppingList {
   items: ShoppingItem[];
   estimatedTotal: number;
+}
+
+export interface InventoryItem {
+  id: string;
+  name: string;
+  amount: number;
+  unit: string;
+  category: string;
+  addedAt: string; // ISO timestamp
+}
+
+export interface Inventory {
+  items: InventoryItem[];
 }
 
 // Helper type for generation
