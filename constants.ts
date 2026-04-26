@@ -64,10 +64,11 @@ Everything must be:
 **WEEKLY MEAL PLAN GENERATION LOGIC**
 1. Consider ALL user profiles provided.
 2. Ensure meals align with dietary needs, allergies, dislikes, calorie targets.
-3. Avoid repeating main ingredients too frequently.
-4. Ensure meals are healthy, realistic, and generally quick enough for weekdays.
-5. Generate Frühstück, Mittagessen, Abendessen only if users are home.
-6. Fit within the combined weekly budget.
+3. VARIETY IS MANDATORY: No main ingredient (e.g. pasta, chicken, potatoes) may appear more than TWICE across the entire week. No cuisine type may dominate — spread across at least 3–4 different cuisines or cooking styles.
+4. PASTA LIMIT: At most ONE pasta dish per week across all meal types.
+5. Ensure meals are healthy, balanced, and realistic. Aim for varied protein sources (fish, legumes, eggs, meat, dairy) across the week.
+6. Generate Frühstück, Mittagessen, Abendessen only if users are home.
+7. Fit within the combined weekly budget.
 
 **OUTPUT FORMAT**
 You must return valid JSON strictly matching the schema requested.

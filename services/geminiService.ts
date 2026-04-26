@@ -160,12 +160,18 @@ export const generateWeeklyPlan = async (
     - If no users are active for a specific slot, do not generate a meal for that slot.
 
     LEARNING & PREFERENCES (CRITICAL):
-    - USER'S CUSTOM RECIPE LIBRARY: ${customRecipeContext}
-    - You are STRONGLY ENCOURAGED to reuse recipes from the CUSTOM RECIPE LIBRARY provided above.
+    - USER'S CUSTOM RECIPE LIBRARY (use for inspiration only): ${customRecipeContext}
+    - You MAY include recipes from the CUSTOM RECIPE LIBRARY, but AT MOST 2 recipes from the entire library across the whole week plan. The majority of the plan MUST be freshly invented recipes.
     - If you choose a recipe from the library, you MUST use the EXACT NAME provided in quotes.
-    - FAVORITES: ${preferences.favorites.join(', ')}
-    - HIGHLY RATED: ${preferences.highlyRated.join(', ')}
-    - DISLIKED: ${preferences.disliked.join(', ')}
+    - FAVORITES (max 2 total across the week): ${preferences.favorites.join(', ')}
+    - HIGHLY RATED (use sparingly for inspiration): ${preferences.highlyRated.join(', ')}
+    - DISLIKED (never include): ${preferences.disliked.join(', ')}
+
+    VARIETY RULES (STRICT — violations will make the plan unusable):
+    - No single main ingredient (pasta, chicken, potatoes, rice, etc.) may appear more than TWICE across the entire week.
+    - Maximum ONE pasta dish for the entire week.
+    - Use at least 3 different protein sources across dinners (e.g. fish, legumes, beef, eggs).
+    - Vary the cuisine/cooking style — do not default to Italian. Mix German, Asian, Mediterranean, etc.
     - ${thermomixContext}
     - ${leftoversContext}
 
