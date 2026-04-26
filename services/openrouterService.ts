@@ -141,13 +141,19 @@ HOUSEHOLD LOGIC (CRITICAL):
 - The recipe must be suitable for ALL users present at that meal.
 - If no users are active for a specific slot, do not generate a meal for that slot.
 
-LEARNING & PREFERENCES (CRITICAL):
-- USER'S CUSTOM RECIPE LIBRARY: ${customRecipeContext}
-- You are STRONGLY ENCOURAGED to reuse recipes from the CUSTOM RECIPE LIBRARY provided above.
-- If you choose a recipe from the library, you MUST use the EXACT NAME provided in quotes.
-- FAVORITES: ${preferences.favorites.join(', ')}
-- HIGHLY RATED: ${preferences.highlyRated.join(', ')}
-- DISLIKED: ${preferences.disliked.join(', ')}
+VARIETY & HEALTH (HIGHEST PRIORITY — non-negotiable):
+- All recipes MUST be freshly invented for this plan. Do NOT reuse recipes from the library or favorites list.
+- No single main ingredient (pasta, chicken, potatoes, rice, etc.) may appear more than TWICE across the entire week.
+- Maximum ONE pasta dish for the entire week.
+- Use at least 3 different protein sources across dinners (e.g. fish, legumes, beef, eggs, tofu).
+- Vary the cuisine and cooking style — spread across at least 3–4 different cuisines (German, Asian, Mediterranean, etc.). Do not default to Italian.
+- Prioritize nutritionally balanced meals: include vegetables, whole grains, and lean proteins.
+
+TASTE PROFILE (for context only — do NOT copy these into the plan):
+- FAVORITE RECIPES (flavor/style guidance only): ${preferences.favorites.join(', ')}
+- HIGHLY RATED (flavor/style guidance only): ${preferences.highlyRated.join(', ')}
+- CUSTOM RECIPE LIBRARY (style inspiration only): ${customRecipeContext}
+- DISLIKED (never include): ${preferences.disliked.join(', ')}
 - ${thermomixContext}
 - ${leftoversContext}
 
@@ -248,10 +254,20 @@ Return a JSON object with this exact structure:
         ? `\nHousehold dietary requirements (MUST be respected for all recipes):\n${dietaryConstraints.join('\n')}\n`
         : '';
 
+    const entropy = Math.random().toString(36).substring(2, 8);
+
     const prompt = `
+[Session token: ${entropy}]
 The user wants to ${currentRecipeName ? `replace the recipe "${currentRecipeName}" for` : 'add a new recipe for'} ${mealType}.
-Generate 5 DISTINCT, HEALTHY alternative recipes.
+Generate 5 alternative recipes.
 ${constraintsBlock}
+VARIETY RULES (STRICT):
+- Each of the 5 recipes MUST come from a DIFFERENT cuisine or cooking style (e.g. one German, one Asian, one Mediterranean, one Middle Eastern, one Latin American — mix it up creatively).
+- Each recipe MUST use a DIFFERENT main protein or main ingredient.
+- Do NOT generate the same recipes you would typically suggest by default. Be creative and surprising.
+- All recipes must be healthy, nutritionally balanced, and use ingredients available at German supermarkets (Rewe, Edeka).
+- Do not suggest pasta-heavy dishes unless the meal type specifically calls for it.
+
 ${schemaDescription}`;
 
     try {
