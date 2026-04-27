@@ -3,7 +3,7 @@ import { WeeklyPlan, ShoppingList, Recipe, GenerationRequestProfile, RecipePrefe
 import { SYSTEM_PROMPT_CORE, DAYS_OF_WEEK } from "../constants";
 
 const BASE_URL = 'https://openrouter.ai/api/v1';
-const MODEL = 'deepseek/deepseek-v4-flash';
+const MODEL = 'anthropic/claude-sonnet-4.6';
 
 const getApiKey = () => {
     const key = import.meta.env.VITE_OPENROUTER_API_KEY;
