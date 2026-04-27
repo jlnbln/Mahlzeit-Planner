@@ -467,7 +467,8 @@ function App() {
       setLoading(true);
       setLoadingMessage('KI sucht Vorschläge…');
       try {
-        const alts = await generateAlternativeRecipes(users, '', mealType);
+        const weekRecipes = activePlan?.days.flatMap(d => d.meals.map(m => m.recipe.name)) ?? [];
+        const alts = await generateAlternativeRecipes(users, '', mealType, weekRecipes);
         setReplacementCandidates(alts);
         setShowReplaceModal(true);
       } catch (e: any) { alert(e.message); }
@@ -755,7 +756,8 @@ function App() {
                     setLoading(true);
                     setLoadingMessage('KI sucht Alternativen...');
                     try {
-                        const alts = await generateAlternativeRecipes(users, n, t);
+                        const weekRecipes = activePlan?.days.flatMap(day => day.meals.map(m => m.recipe.name)) ?? [];
+                        const alts = await generateAlternativeRecipes(users, n, t, weekRecipes);
                         setReplacementCandidates(alts);
                         setShowReplaceModal(true);
                     } catch (e: any) { alert(e.message); }

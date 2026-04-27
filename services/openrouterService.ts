@@ -3,7 +3,7 @@ import { WeeklyPlan, ShoppingList, Recipe, GenerationRequestProfile, RecipePrefe
 import { SYSTEM_PROMPT_CORE, DAYS_OF_WEEK } from "../constants";
 
 const BASE_URL = 'https://openrouter.ai/api/v1';
-const MODEL = 'anthropic/claude-sonnet-4-6';
+const MODEL = 'deepseek/deepseek-v4-flash';
 
 const getApiKey = () => {
     const key = import.meta.env.VITE_OPENROUTER_API_KEY;
@@ -222,7 +222,7 @@ ${schemaDescription}`;
     }
 };
 
-export const generateAlternativeRecipes = async (users: UserProfile[], currentRecipeName: string, mealType: string): Promise<Recipe[]> => {
+export const generateAlternativeRecipes = async (users: UserProfile[], currentRecipeName: string, mealType: string, weekRecipes: string[] = []): Promise<Recipe[]> => {
     const schemaDescription = `
 Return a JSON object with this exact structure:
 {
@@ -254,19 +254,23 @@ Return a JSON object with this exact structure:
         ? `\nHousehold dietary requirements (MUST be respected for all recipes):\n${dietaryConstraints.join('\n')}\n`
         : '';
 
+    const weekContext = weekRecipes.length
+        ? `\nRECIPES ALREADY IN THIS WEEK'S PLAN (do NOT repeat or closely resemble any of these):\n${weekRecipes.map(r => `- ${r}`).join('\n')}\n`
+        : '';
+
     const entropy = Math.random().toString(36).substring(2, 8);
 
     const prompt = `
 [Session token: ${entropy}]
 The user wants to ${currentRecipeName ? `replace the recipe "${currentRecipeName}" for` : 'add a new recipe for'} ${mealType}.
 Generate 5 alternative recipes.
-${constraintsBlock}
+${constraintsBlock}${weekContext}
 VARIETY RULES (STRICT):
-- Each of the 5 recipes MUST come from a DIFFERENT cuisine or cooking style (e.g. one German, one Asian, one Mediterranean, one Middle Eastern, one Latin American — mix it up creatively).
+- Each of the 5 recipes MUST be different from the others either in cuisine or cooking style — mix it up be creative.
 - Each recipe MUST use a DIFFERENT main protein or main ingredient.
 - Do NOT generate the same recipes you would typically suggest by default. Be creative and surprising.
 - All recipes must be healthy, nutritionally balanced, and use ingredients available at German supermarkets (Rewe, Edeka).
-- Do not suggest pasta-heavy dishes unless the meal type specifically calls for it.
+- The alternatives must fill a nutritional gap in the existing week plan — consider what proteins, vegetables, and cuisines are already represented and choose something that complements the week.
 
 ${schemaDescription}`;
 

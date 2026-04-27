@@ -236,7 +236,7 @@ export const generateShoppingList = async (plan: WeeklyPlan, storeName: string):
   }
 };
 
-export const generateAlternativeRecipes = async (users: UserProfile[], currentRecipeName: string, mealType: string): Promise<Recipe[]> => {
+export const generateAlternativeRecipes = async (users: UserProfile[], currentRecipeName: string, mealType: string, weekRecipes: string[] = []): Promise<Recipe[]> => {
     const ai = getClient();
 
     // Build dietary constraints from all household members
@@ -254,10 +254,15 @@ export const generateAlternativeRecipes = async (users: UserProfile[], currentRe
         ? `\nHousehold dietary requirements (MUST be respected for all recipes):\n${dietaryConstraints.join('\n')}\n`
         : '';
 
+    const weekContext = weekRecipes.length
+        ? `\nRECIPES ALREADY IN THIS WEEK'S PLAN (do NOT repeat or closely resemble any of these):\n${weekRecipes.map(r => `- ${r}`).join('\n')}\n`
+        : '';
+
     const prompt = `
       The user wants to ${currentRecipeName ? `replace the recipe "${currentRecipeName}" for` : 'add a new recipe for'} ${mealType}.
       Generate 5 DISTINCT, HEALTHY alternative recipes.
-      ${constraintsBlock}
+      ${constraintsBlock}${weekContext}
+      The alternatives must fill a nutritional gap in the existing week plan — consider what proteins, vegetables, and cuisines are already represented and choose something that complements the week.
     `;
 
     try {
