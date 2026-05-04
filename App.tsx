@@ -12,7 +12,7 @@ import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 // Icons
 import {
   Users, Calendar, ShoppingCart, ChefHat,
-  Heart, Loader2, Home, Settings, Sparkles, Package
+  Heart, Loader2, Home, Settings, Sparkles, Package, Archive
 } from 'lucide-react';
 
 // Components
@@ -25,7 +25,8 @@ import { deductInventoryForRecipe } from './utils/units';
 import { UserList, UserEdit } from './components/UserViews';
 import SettingsView from './components/Settings';
 import Favorites from './components/Favorites';
-import { RecipeFormModal, GenerationModal, RecipeDetailModal, ReplacementModal, FavoritePickerModal, ResetConfirmModal, RecipeImportModal, AddMealModal } from './components/Modals';
+import ArchiveView from './components/Archive';
+import { RecipeFormModal, GenerationModal, RecipeDetailModal, ReplacementModal, FavoritePickerModal, ResetConfirmModal, RecipeImportModal, AddMealModal, RegenerateConfirmModal } from './components/Modals';
 import { Auth } from './components/Auth';
 
 // --- Helpers ---
@@ -51,7 +52,7 @@ const getStartOfWeek = (date: Date, startDayName: string) => {
     return newDate;
 };
 
-type ViewState = 'dashboard' | 'user_list' | 'user_edit' | 'plan' | 'shopping' | 'favorites' | 'settings' | 'inventory';
+type ViewState = 'dashboard' | 'user_list' | 'user_edit' | 'plan' | 'shopping' | 'favorites' | 'settings' | 'inventory' | 'archive';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -73,7 +74,7 @@ function App() {
   const [loadingMessage, setLoadingMessage] = useState('');
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
-  const [activeTabDay, setActiveTabDay] = useState<string>('Montag');
+  const [activeTabDay, setActiveTabDay] = useState<string>(() => DAYS_OF_WEEK[(new Date().getDay() + 6) % 7]);
   const [showGenModal, setShowGenModal] = useState(false);
   const [genModalInitialDate, setGenModalInitialDate] = useState<Date | undefined>(undefined);
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
@@ -86,6 +87,9 @@ function App() {
   const [showAddMealModal, setShowAddMealModal] = useState(false);
   const [addMealContext, setAddMealContext] = useState<{ dayIndex: number; mealType: string } | null>(null);
   const [isMealAddMode, setIsMealAddMode] = useState(false);
+  const [archivedRecipes, setArchivedRecipes] = useState<Recipe[]>([]);
+  const [pendingGeneration, setPendingGeneration] = useState<{ date: Date; attendance: Record<string, any> } | null>(null);
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -119,10 +123,11 @@ function App() {
             if (data.inventory) setInventory(data.inventory);
             if (data.settings) setAppSettings({ ...DEFAULT_SETTINGS, ...data.settings });
             if (data.savedRecipes) setSavedRecipes(data.savedRecipes);
+            setArchivedRecipes(data.archivedRecipes || []);
         } else {
             const initialUsers = [DEFAULT_USER];
             setUsers(initialUsers);
-            saveToFirebase(initialUsers, {}, null, DEFAULT_SETTINGS, [], null, user.uid);
+            saveToFirebase(initialUsers, {}, null, DEFAULT_SETTINGS, [], null, [], user.uid);
         }
     }, (error) => {
         console.error("Firebase Read Error:", error);
@@ -137,6 +142,7 @@ function App() {
       newSettings: AppSettings,
       newSavedRecipes: Recipe[],
       newInventory: Inventory | null,
+      newArchivedRecipes: Recipe[],
       explicitId?: string
   ) => {
       const targetId = explicitId || (user ? user.uid : null);
@@ -149,6 +155,7 @@ function App() {
               settings: newSettings,
               savedRecipes: newSavedRecipes,
               inventory: newInventory,
+              archivedRecipes: newArchivedRecipes,
               updatedAt: new Date().toISOString()
           }, { merge: true });
       } catch (e: any) {
@@ -165,10 +172,11 @@ function App() {
           setPlans({});
           setShoppingList(null);
           setSavedRecipes([]);
+          setArchivedRecipes([]);
           setAppSettings(DEFAULT_SETTINGS);
           setShowResetConfirm(false);
           setInventory(null);
-          await saveToFirebase([DEFAULT_USER], {}, null, DEFAULT_SETTINGS, [], null, user.uid);
+          await saveToFirebase([DEFAULT_USER], {}, null, DEFAULT_SETTINGS, [], null, [], user.uid);
           alert('Datenbank wurde erfolgreich zurückgesetzt.');
           setView('dashboard');
       } catch (e) {
@@ -211,8 +219,9 @@ function App() {
           };
           const updatedPlans = { ...plans, [currentViewDateIso]: emptyPlan };
           setPlans(updatedPlans);
-          saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, inventory);
+          saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, inventory, archivedRecipes);
       }
+      setActiveTabDay(DAYS_OF_WEEK[(new Date().getDay() + 6) % 7]);
       setView('plan');
   };
 
@@ -250,28 +259,32 @@ function App() {
       updatedPlans[planToUpdate.startDate] = planToUpdate;
       setPlans(updatedPlans);
       if (nextInventory !== inventory) setInventory(nextInventory);
-      saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, nextInventory);
+      saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, nextInventory, archivedRecipes);
   };
 
   const updateRecipeInPlan = (recipeToUpdate: Recipe, newProps: Partial<Recipe>) => {
-    if (!activePlan) return;
-    const updatedPlans = { ...plans };
-    const planToUpdate = { ...activePlan } as WeeklyPlan;
-    planToUpdate.days = planToUpdate.days.map(d => ({
-      ...d,
-      meals: d.meals.map(m => {
-        if ((m.recipe.id && m.recipe.id === recipeToUpdate.id) || m.recipe.name === recipeToUpdate.name) {
-          return { ...m, recipe: { ...m.recipe, ...newProps }};
-        }
-        return m;
-      })
-    }));
-    updatedPlans[planToUpdate.startDate] = planToUpdate;
-    setPlans(updatedPlans);
+    let updatedPlans = { ...plans };
+    if (activePlan) {
+      const planToUpdate = { ...activePlan } as WeeklyPlan;
+      planToUpdate.days = planToUpdate.days.map(d => ({
+        ...d,
+        meals: d.meals.map(m => {
+          if ((m.recipe.id && m.recipe.id === recipeToUpdate.id) || m.recipe.name === recipeToUpdate.name) {
+            return { ...m, recipe: { ...m.recipe, ...newProps }};
+          }
+          return m;
+        })
+      }));
+      updatedPlans[planToUpdate.startDate] = planToUpdate;
+      setPlans(updatedPlans);
+    }
     const recipeNameMatch = recipeToUpdate.name;
-    const updatedSaved = savedRecipes.map(r => r.name === recipeNameMatch ? { ...r, ...newProps } : r);
+    const existsInSaved = savedRecipes.some(r => r.name === recipeNameMatch);
+    const updatedSaved = existsInSaved
+        ? savedRecipes.map(r => r.name === recipeNameMatch ? { ...r, ...newProps } : r)
+        : [...savedRecipes, { ...recipeToUpdate, ...newProps }];
     setSavedRecipes(updatedSaved);
-    saveToFirebase(users, updatedPlans, shoppingList, settings, updatedSaved, inventory);
+    saveToFirebase(users, updatedPlans, shoppingList, settings, updatedSaved, inventory, archivedRecipes);
     if (selectedRecipe && selectedRecipe.name === recipeToUpdate.name) {
         setSelectedRecipe({ ...selectedRecipe, ...newProps });
     }
@@ -279,7 +292,6 @@ function App() {
 
   const getAllFavoritedRecipes = (): Recipe[] => {
     const favs = new Map<string, Recipe>();
-    (savedRecipes || []).forEach(r => { if (r.isFavorite) favs.set(r.name, r); });
     (Object.values(plans) as WeeklyPlan[]).forEach((plan: WeeklyPlan) => {
       plan.days.forEach(day => {
         day.meals.forEach(meal => {
@@ -287,15 +299,34 @@ function App() {
         });
       });
     });
+    // savedRecipes wins over plan versions — it is the source of truth for metadata
+    (savedRecipes || []).forEach(r => { if (r.isFavorite) favs.set(r.name, r); });
     return Array.from(favs.values());
   };
 
-  const handleConfirmGeneration = async (targetDate: Date, attendance: Record<string, any>) => {
-    setShowGenModal(false);
+  const performGeneration = async (targetDate: Date, attendance: Record<string, any>) => {
     setLoading(true);
     setLoadingMessage('KI erstellt deinen Wochenplan...');
     const startDate = getStartOfWeek(targetDate, settings.weekStartDay);
     const isoDate = toLocalIso(startDate);
+
+    // Archive recipes from the existing plan before overwriting
+    let updatedArchived = [...archivedRecipes];
+    const existingPlan = plans[isoDate];
+    if (existingPlan) {
+        const savedNames = new Set(savedRecipes.map(r => r.name));
+        const archivedNames = new Set(archivedRecipes.map(r => r.name));
+        existingPlan.days.forEach(day => {
+            day.meals.forEach(meal => {
+                const r = meal.recipe;
+                if (!savedNames.has(r.name) && !archivedNames.has(r.name)) {
+                    updatedArchived.push(r);
+                    archivedNames.add(r.name);
+                }
+            });
+        });
+    }
+
     const requestProfiles: GenerationRequestProfile[] = users.map(u => ({
         user: u,
         activeTimes: attendance[u.id] || u.homeTimes
@@ -337,12 +368,13 @@ function App() {
       });
       const updatedPlans = { ...plans, [isoDate]: newPlan };
       setPlans(updatedPlans);
+      setArchivedRecipes(updatedArchived);
       let updatedList = shoppingList;
       if (isoDate === currentViewDateIso) {
           updatedList = null;
           setShoppingList(null);
       }
-      await saveToFirebase(users, updatedPlans, updatedList, settings, currentSavedRecipes, inventory);
+      await saveToFirebase(users, updatedPlans, updatedList, settings, currentSavedRecipes, inventory, updatedArchived);
       setCurrentViewDate(startDate);
       setView('plan');
     } catch (error: any) {
@@ -350,6 +382,17 @@ function App() {
       alert(`Fehler beim Generieren des Plans: ${error.message || String(error)}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleConfirmGeneration = (targetDate: Date, attendance: Record<string, any>) => {
+    setShowGenModal(false);
+    const isoDate = toLocalIso(getStartOfWeek(targetDate, settings.weekStartDay));
+    if (plans[isoDate]) {
+        setPendingGeneration({ date: targetDate, attendance });
+        setShowRegenerateConfirm(true);
+    } else {
+        performGeneration(targetDate, attendance);
     }
   };
 
@@ -365,7 +408,7 @@ function App() {
         estimatedTotal: existing.estimatedTotal + generated.estimatedTotal,
       };
       setShoppingList(merged);
-      saveToFirebase(users, plans, merged, settings, savedRecipes, inventory);
+      saveToFirebase(users, plans, merged, settings, savedRecipes, inventory, archivedRecipes);
       setView('shopping');
     } catch (error: any) {
       alert(`Fehler bei der Einkaufsliste: ${error.message || String(error)}`);
@@ -384,7 +427,7 @@ function App() {
     const existing = inventory ?? { items: [] };
     const merged = { items: [...existing.items, ...newItems] };
     setInventory(merged);
-    saveToFirebase(users, plans, shoppingList, settings, savedRecipes, merged);
+    saveToFirebase(users, plans, shoppingList, settings, savedRecipes, merged, archivedRecipes);
     setShowReceiptImportModal(false);
   };
 
@@ -415,7 +458,7 @@ function App() {
     planToUpdate.days[dayIndex].meals.splice(mealIndex, 1);
     const updatedPlans = { ...plans, [planToUpdate.startDate]: planToUpdate };
     setPlans(updatedPlans);
-    saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, inventory);
+    saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, inventory, archivedRecipes);
   };
 
   const handleAddMealClick = (dayIndex: number) => {
@@ -453,7 +496,7 @@ function App() {
       });
       const updatedPlans = { ...plans, [planToUpdate.startDate]: planToUpdate };
       setPlans(updatedPlans);
-      saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, inventory);
+      saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, inventory, archivedRecipes);
       setAddMealContext(null);
       setIsMealAddMode(false);
       return;
@@ -493,7 +536,7 @@ function App() {
     planToUpdate.days[dayIndex].meals.push(newSlot);
     const updatedPlans = { ...plans, [planToUpdate.startDate]: planToUpdate };
     setPlans(updatedPlans);
-    saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, inventory);
+    saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, inventory, archivedRecipes);
     // For favorites picker: close immediately. For AI modal: keep open (handled by modal's Fertig button).
     if (showFavPicker) {
       setShowFavPicker(false);
@@ -521,12 +564,12 @@ function App() {
         });
         setPlans(updatedPlans);
         setSavedRecipes(updatedSaved);
-        saveToFirebase(users, updatedPlans, shoppingList, settings, updatedSaved, inventory);
+        saveToFirebase(users, updatedPlans, shoppingList, settings, updatedSaved, inventory, archivedRecipes);
     } else {
         const final: Recipe = { ...updatedRecipe, id: `manual_${Date.now()}`, source: 'manual', isFavorite: true } as Recipe;
         updatedSaved = [...(savedRecipes || []), final];
         setSavedRecipes(updatedSaved);
-        saveToFirebase(users, plans, shoppingList, settings, updatedSaved, inventory);
+        saveToFirebase(users, plans, shoppingList, settings, updatedSaved, inventory, archivedRecipes);
     }
     setEditingRecipe(null);
     setShowAddRecipeModal(false);
@@ -557,6 +600,7 @@ function App() {
 
   const desktopIconNavItems = [
     { target: 'favorites' as ViewState, icon: Heart, title: 'Favoriten' },
+    { target: 'archive' as ViewState, icon: Archive, title: 'Archiv' },
     { target: 'settings' as ViewState, icon: Settings, title: 'Einstellungen' },
   ];
 
@@ -714,7 +758,7 @@ function App() {
                      if (editingUserId) updatedUsers = users.map(u => u.id === editingUserId ? tempUser : u);
                      else updatedUsers = [...users, tempUser];
                      setUsers(updatedUsers);
-                     saveToFirebase(updatedUsers, plans, shoppingList, settings, savedRecipes, inventory);
+                     saveToFirebase(updatedUsers, plans, shoppingList, settings, savedRecipes, inventory, archivedRecipes);
                      setView('user_list');
                      setTempUser(null);
                 }}
@@ -723,7 +767,7 @@ function App() {
                     if (confirm('Profil wirklich löschen?')) {
                         const updatedUsers = users.filter(u => u.id !== id);
                         setUsers(updatedUsers);
-                        saveToFirebase(updatedUsers, plans, shoppingList, settings, savedRecipes, inventory);
+                        saveToFirebase(updatedUsers, plans, shoppingList, settings, savedRecipes, inventory, archivedRecipes);
                         setView('user_list');
                     }
                 }}
@@ -771,7 +815,7 @@ function App() {
                 onPlanUpdate={(updatedPlan) => {
                     const updatedPlans = { ...plans, [updatedPlan.startDate]: updatedPlan };
                     setPlans(updatedPlans);
-                    saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, inventory);
+                    saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, inventory, archivedRecipes);
                 }}
                 onAddMealClick={handleAddMealClick}
                 onDeleteMeal={handleDeleteMeal}
@@ -784,7 +828,7 @@ function App() {
                 settings={settings}
                 setShoppingList={(newList) => {
                     setShoppingList(newList);
-                    saveToFirebase(users, plans, newList, settings, savedRecipes, inventory);
+                    saveToFirebase(users, plans, newList, settings, savedRecipes, inventory, archivedRecipes);
                 }}
             />
         )}
@@ -795,7 +839,7 @@ function App() {
                 users={users}
                 setInventory={(newInv) => {
                     setInventory(newInv);
-                    saveToFirebase(users, plans, shoppingList, settings, savedRecipes, newInv);
+                    saveToFirebase(users, plans, shoppingList, settings, savedRecipes, newInv, archivedRecipes);
                 }}
                 onImportReceipt={() => setShowReceiptImportModal(true)}
                 onGenerateRecipes={handleGenerateRecipesFromInventory}
@@ -806,8 +850,22 @@ function App() {
             <SettingsView
                 settings={settings}
                 onUpdateSettings={(s) => {
+                    let updatedPlans = plans;
+                    if (s.weekStartDay !== settings.weekStartDay) {
+                        const remapped: Record<string, WeeklyPlan> = {};
+                        Object.values(plans).forEach(plan => {
+                            const midpoint = new Date(plan.startDate + 'T12:00:00');
+                            const newStart = getStartOfWeek(midpoint, s.weekStartDay);
+                            const newKey = toLocalIso(newStart);
+                            if (!remapped[newKey]) {
+                                remapped[newKey] = { ...plan, startDate: newKey };
+                            }
+                        });
+                        updatedPlans = remapped;
+                        setPlans(updatedPlans);
+                    }
                     setAppSettings(s);
-                    saveToFirebase(users, plans, shoppingList, s, savedRecipes, inventory);
+                    saveToFirebase(users, updatedPlans, shoppingList, s, savedRecipes, inventory, archivedRecipes);
                 }}
                 onRequestReset={() => setShowResetConfirm(true)}
                 onSignOut={handleSignOut}
@@ -827,7 +885,30 @@ function App() {
                     setShowAddRecipeModal(true);
                 }}
                 onImportRecipe={() => setShowImportModal(true)}
+                onViewArchive={() => setView('archive')}
              />
+        )}
+
+        {view === 'archive' && (
+            <ArchiveView
+                recipes={archivedRecipes}
+                onSelectRecipe={setSelectedRecipe}
+                onRemoveFromArchive={(r) => {
+                    const updated = archivedRecipes.filter(a => a.name !== r.name);
+                    setArchivedRecipes(updated);
+                    saveToFirebase(users, plans, shoppingList, settings, savedRecipes, inventory, updated);
+                }}
+                onRestoreToFavorites={(r) => {
+                    const updatedArchived = archivedRecipes.filter(a => a.name !== r.name);
+                    const alreadySaved = savedRecipes.some(s => s.name === r.name);
+                    const updatedSaved = alreadySaved
+                        ? savedRecipes.map(s => s.name === r.name ? { ...s, isFavorite: true } : s)
+                        : [...savedRecipes, { ...r, isFavorite: true }];
+                    setArchivedRecipes(updatedArchived);
+                    setSavedRecipes(updatedSaved);
+                    saveToFirebase(users, plans, shoppingList, settings, updatedSaved, inventory, updatedArchived);
+                }}
+            />
         )}
         {/* Spacer for mobile bottom nav */}
         <div className="md:hidden" style={{ height: 'calc(5.5rem + env(safe-area-inset-bottom))' }} />
@@ -901,7 +982,7 @@ function App() {
                      );
                      updatedPlans[planToUpdate.startDate] = planToUpdate;
                      setPlans(updatedPlans);
-                     saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, inventory);
+                     saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, inventory, archivedRecipes);
                      setShowReplaceModal(false);
                  }
              }}
@@ -927,7 +1008,7 @@ function App() {
                     );
                     updatedPlans[planToUpdate.startDate] = planToUpdate;
                     setPlans(updatedPlans);
-                    saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, inventory);
+                    saveToFirebase(users, updatedPlans, shoppingList, settings, savedRecipes, inventory, archivedRecipes);
                     setShowFavPicker(false);
                 }
               }}
@@ -938,6 +1019,21 @@ function App() {
           <ResetConfirmModal
              onConfirm={handleResetDatabase}
              onCancel={() => setShowResetConfirm(false)}
+          />
+      )}
+      {showRegenerateConfirm && (
+          <RegenerateConfirmModal
+             onConfirm={() => {
+                 setShowRegenerateConfirm(false);
+                 if (pendingGeneration) {
+                     performGeneration(pendingGeneration.date, pendingGeneration.attendance);
+                     setPendingGeneration(null);
+                 }
+             }}
+             onCancel={() => {
+                 setShowRegenerateConfirm(false);
+                 setPendingGeneration(null);
+             }}
           />
       )}
       {showImportModal && (

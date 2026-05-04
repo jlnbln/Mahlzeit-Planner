@@ -1,20 +1,18 @@
 
 import React, { useState } from 'react';
 import { Recipe } from '../types';
-import { Heart, Plus, Clock, Star, Edit2, ChefHat, Search, X, Upload, ChevronDown, Archive } from 'lucide-react';
+import { Archive, Clock, Star, Search, X, ChevronDown, Trash2, Bookmark } from 'lucide-react';
 
-interface FavoritesProps {
+interface ArchiveProps {
     recipes: Recipe[];
     onSelectRecipe: (r: Recipe) => void;
-    onEditRecipe: (r: Recipe) => void;
-    onAddManual: () => void;
-    onImportRecipe: () => void;
-    onViewArchive?: () => void;
+    onRemoveFromArchive: (r: Recipe) => void;
+    onRestoreToFavorites: (r: Recipe) => void;
 }
 
 const COMMON_TAGS = ['schnell', 'vegetarisch', 'vegan'];
 
-const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRecipe, onAddManual, onImportRecipe, onViewArchive }) => {
+const ArchiveView: React.FC<ArchiveProps> = ({ recipes, onSelectRecipe, onRemoveFromArchive, onRestoreToFavorites }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [calorieFilter, setCalorieFilter] = useState<string | null>(null);
     const [timeFilter, setTimeFilter] = useState<string | null>(null);
@@ -23,7 +21,6 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [openCategory, setOpenCategory] = useState<string | null>(null);
 
-    // Derive available tags
     const hasThermomix = recipes.some(r => r.tags.some(t => t.toLowerCase() === 'thermomix'));
     const existingCommonTags = COMMON_TAGS.filter(ct =>
         recipes.some(r => r.tags.some(t => t.toLowerCase() === ct))
@@ -35,7 +32,6 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
         ))
     )).sort() as string[];
 
-    // Case-insensitive tag matching (AND logic)
     const tagMatchesAll = (recipeTags: string[], filters: string[]) =>
         filters.every(ft => recipeTags.some(rt => rt.toLowerCase() === ft.toLowerCase()));
 
@@ -153,55 +149,30 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="section-title flex items-center gap-2">
-                        Deine Favoriten
-                        <Heart className="h-6 w-6 fill-red-400 text-red-400" />
+                        Archiv
+                        <Archive className="h-6 w-6" style={{ color: 'var(--c-primary)' }} />
                     </h2>
                     {recipes.length > 0 && (
                         <p className="text-sm mt-1 font-medium" style={{ color: 'var(--c-text-mid)' }}>
-                            {isFiltering ? `${filtered.length} von ${recipes.length}` : recipes.length} gespeicherte Rezepte
+                            {isFiltering ? `${filtered.length} von ${recipes.length}` : recipes.length} archivierte Rezepte
                         </p>
                     )}
                 </div>
-                <div className="flex items-center gap-2">
-                    {onViewArchive && (
-                        <button onClick={onViewArchive} className="btn-ghost text-sm py-2 px-3 gap-1.5">
-                            <Archive size={15} />
-                            <span className="hidden sm:inline">Archiv</span>
-                        </button>
-                    )}
-                    <button onClick={onImportRecipe} className="btn-ghost text-sm py-2 px-3 gap-1.5">
-                        <Upload size={15} />
-                        <span className="hidden sm:inline">Importieren</span>
-                    </button>
-                    <button onClick={onAddManual} className="btn-primary gap-2 text-sm py-2.5 px-4">
-                        <Plus size={16} />
-                        <span className="hidden sm:inline">Rezept hinzufügen</span>
-                        <span className="sm:hidden">Neu</span>
-                    </button>
-                </div>
             </div>
 
-            {/* ── Empty state (no recipes at all) ──────────── */}
+            {/* ── Empty state ──────────────────────────────── */}
             {recipes.length === 0 ? (
                 <div className="card p-12 flex flex-col items-center text-center">
                     <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-                         style={{ background: '#fef0ee' }}>
-                        <Heart className="h-7 w-7 text-red-300" />
+                         style={{ background: 'var(--c-surface-low)' }}>
+                        <Archive className="h-7 w-7" style={{ color: 'var(--c-text-dim)' }} />
                     </div>
                     <h3 className="text-xl font-extrabold mb-2" style={{ color: 'var(--c-text)' }}>
-                        Noch keine Favoriten
+                        Noch keine archivierten Rezepte
                     </h3>
-                    <p className="text-sm max-w-xs mb-6" style={{ color: 'var(--c-text-mid)' }}>
-                        Markiere Rezepte im Wochenplan als Favorit oder füge eigene Rezepte hinzu.
+                    <p className="text-sm max-w-xs" style={{ color: 'var(--c-text-mid)' }}>
+                        Wenn du einen Wochenplan neu generierst, werden die Rezepte des alten Plans automatisch hier gespeichert.
                     </p>
-                    <div className="flex gap-3 flex-wrap justify-center">
-                        <button onClick={onImportRecipe} className="btn-ghost gap-2">
-                            <Upload size={16} /> Importieren
-                        </button>
-                        <button onClick={onAddManual} className="btn-primary gap-2">
-                            <Plus size={16} /> Erstes Rezept hinzufügen
-                        </button>
-                    </div>
                 </div>
             ) : (
                 <>
@@ -303,7 +274,7 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
                                     style={{ animationDelay: `${idx * 0.04}s` }}
                                 >
                                     <div className="h-1.5 rounded-t-xl"
-                                         style={{ background: '#b8fd4b' }} />
+                                         style={{ background: 'var(--c-text-dim)' }} />
 
                                     <div className="p-5">
                                         <div className="flex items-start justify-between gap-2 mb-3">
@@ -319,18 +290,27 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
                                                     {recipe.name}
                                                 </h3>
                                             </button>
-                                            <div className="flex items-center gap-1.5 shrink-0">
+                                            <div className="flex items-center gap-1 shrink-0">
                                                 <button
-                                                    onClick={(e) => { e.stopPropagation(); onEditRecipe(recipe); }}
+                                                    onClick={(e) => { e.stopPropagation(); onRestoreToFavorites(recipe); }}
                                                     className="p-1.5 rounded-lg transition-colors"
                                                     style={{ color: 'var(--c-text-dim)' }}
-                                                    title="Bearbeiten"
+                                                    title="Zu Favoriten hinzufügen"
                                                     onMouseEnter={e => { e.currentTarget.style.color = 'var(--c-primary)'; e.currentTarget.style.background = 'var(--c-surface-low)'; }}
                                                     onMouseLeave={e => { e.currentTarget.style.color = 'var(--c-text-dim)'; e.currentTarget.style.background = ''; }}
                                                 >
-                                                    <Edit2 size={15} />
+                                                    <Bookmark size={15} />
                                                 </button>
-                                                <Heart className="h-4 w-4 fill-red-400 text-red-400" />
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); onRemoveFromArchive(recipe); }}
+                                                    className="p-1.5 rounded-lg transition-colors"
+                                                    style={{ color: 'var(--c-text-dim)' }}
+                                                    title="Aus Archiv entfernen"
+                                                    onMouseEnter={e => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.background = 'var(--c-surface-low)'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--c-text-dim)'; e.currentTarget.style.background = ''; }}
+                                                >
+                                                    <Trash2 size={15} />
+                                                </button>
                                             </div>
                                         </div>
 
@@ -343,11 +323,6 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
                                             {recipe.rating && recipe.rating > 0 && (
                                                 <span className="tag-chip tag-chip-amber cursor-pointer">
                                                     <Star size={11} className="mr-0.5 fill-current" /> {recipe.rating}
-                                                </span>
-                                            )}
-                                            {recipe.source === 'manual' && (
-                                                <span className="tag-chip tag-chip-blue cursor-pointer">
-                                                    <ChefHat size={11} className="mr-0.5" /> Eigenes
                                                 </span>
                                             )}
                                             {recipe.tags.filter(t => t.toLowerCase() === 'thermomix').map(t => (
@@ -373,4 +348,4 @@ const Favorites: React.FC<FavoritesProps> = ({ recipes, onSelectRecipe, onEditRe
     );
 };
 
-export default Favorites;
+export default ArchiveView;

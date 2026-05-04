@@ -631,7 +631,7 @@ export const RecipeDetailModal = ({
     onClose: () => void;
     onUpdate: (p: Partial<Recipe>) => void;
 }) => (
-    <ModalShell onClose={onClose} maxWidth="max-w-lg">
+    <ModalShell onClose={onClose} maxWidth="max-w-4xl">
         <div className="flex items-center justify-between px-5 pt-5 pb-0 shrink-0">
             <span className="text-[10px] font-bold text-[#426500] dark:text-[#b8fd4b] uppercase tracking-widest">
                 Rezept
@@ -652,76 +652,81 @@ export const RecipeDetailModal = ({
             </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 pt-2 pb-5 space-y-5">
-            {/* Title */}
-            <h2 className="font-sans text-2xl font-bold text-[#2c302b] dark:text-[#e6ede6] leading-tight">
-                {recipe.name}
-            </h2>
+        <div className="flex-1 overflow-y-auto px-5 pt-2 pb-5">
+            <div className="sm:flex sm:gap-6">
+                {/* Left column: meta + ingredients */}
+                <div className="sm:w-1/2 space-y-5">
+                    {/* Title */}
+                    <h2 className="font-sans text-2xl font-bold text-[#2c302b] dark:text-[#e6ede6] leading-tight">
+                        {recipe.name}
+                    </h2>
 
-            {/* Stats row */}
-            <div className="flex items-center gap-4 py-3 border-y border-[#e6e9e1] dark:border-[#2c3a2c]">
-                <div>
-                    <p className="text-[10px] font-bold text-[#959b8e] dark:text-[#6a7069] uppercase tracking-wide mb-1">Bewertung</p>
-                    <StarRating rating={recipe.rating || 0} onRate={r => onUpdate({ rating: r })} size={18} />
-                </div>
-                <div className="w-px h-8 bg-[#eff2ea] dark:bg-[#2c3a2c]" />
-                <div>
-                    <p className="text-[10px] font-bold text-[#959b8e] dark:text-[#6a7069] uppercase tracking-wide mb-1">Kalorien</p>
-                    <p className="font-bold text-[#2c302b] dark:text-[#e6ede6]">{recipe.calories} kcal</p>
-                </div>
-                <div className="w-px h-8 bg-[#eff2ea] dark:bg-[#2c3a2c]" />
-                <div>
-                    <p className="text-[10px] font-bold text-[#959b8e] dark:text-[#6a7069] uppercase tracking-wide mb-1">Dauer</p>
-                    <p className="font-bold text-[#2c302b] dark:text-[#e6ede6] flex items-center gap-1">
-                        <Clock size={13} />{recipe.cookingTime || 30}m
-                    </p>
-                </div>
-            </div>
-
-            {/* Tags */}
-            {recipe.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                    {recipe.tags.map(tag => (
-                        <span
-                            key={tag}
-                            className={`tag-chip ${tag.toLowerCase() === 'thermomix' ? 'tag-chip-purple' : ''}`}
-                        >
-                            {tag}
-                        </span>
-                    ))}
-                </div>
-            )}
-
-            {/* Ingredients */}
-            <div>
-                <h3 className="text-sm font-semibold text-[#2c302b] dark:text-[#e6ede6] mb-2.5 flex items-center gap-2">
-                    <ShoppingCart size={15} className="text-[#426500] dark:text-[#b8fd4b]" /> Zutaten
-                </h3>
-                <div className="grid grid-cols-2 gap-2">
-                    {recipe.ingredients.map((ing, i) => (
-                        <div key={i} className="text-sm bg-[#f5f7f0] dark:bg-[#1e2a1e] p-2.5 rounded-lg border border-[#e6e9e1] dark:border-[#2c3a2c]">
-                            <span className="font-bold text-[#2c302b] dark:text-[#e6ede6]">{ing.amount} {ing.unit}</span>
-                            <span className="text-[#595c57] dark:text-[#8a9089]"> {ing.name}</span>
+                    {/* Stats row */}
+                    <div className="flex items-center gap-4 py-3 border-y border-[#e6e9e1] dark:border-[#2c3a2c]">
+                        <div>
+                            <p className="text-[10px] font-bold text-[#959b8e] dark:text-[#6a7069] uppercase tracking-wide mb-1">Bewertung</p>
+                            <StarRating rating={recipe.rating || 0} onRate={r => onUpdate({ rating: r })} size={18} />
                         </div>
-                    ))}
-                </div>
-            </div>
+                        <div className="w-px h-8 bg-[#eff2ea] dark:bg-[#2c3a2c]" />
+                        <div>
+                            <p className="text-[10px] font-bold text-[#959b8e] dark:text-[#6a7069] uppercase tracking-wide mb-1">Kalorien</p>
+                            <p className="font-bold text-[#2c302b] dark:text-[#e6ede6]">{recipe.calories} kcal</p>
+                        </div>
+                        <div className="w-px h-8 bg-[#eff2ea] dark:bg-[#2c3a2c]" />
+                        <div>
+                            <p className="text-[10px] font-bold text-[#959b8e] dark:text-[#6a7069] uppercase tracking-wide mb-1">Dauer</p>
+                            <p className="font-bold text-[#2c302b] dark:text-[#e6ede6] flex items-center gap-1">
+                                <Clock size={13} />{recipe.cookingTime || 30}m
+                            </p>
+                        </div>
+                    </div>
 
-            {/* Instructions */}
-            <div>
-                <h3 className="text-sm font-semibold text-[#2c302b] dark:text-[#e6ede6] mb-2.5 flex items-center gap-2">
-                    <ChefHat size={15} className="text-[#426500] dark:text-[#b8fd4b]" /> Zubereitung
-                </h3>
-                <ol className="space-y-3">
-                    {recipe.instructions.map((step, i) => (
-                        <li key={i} className="flex gap-3 text-sm text-[#2c302b] dark:text-[#e6ede6]">
-                            <span className="shrink-0 w-6 h-6 rounded-full bg-[#426500] dark:bg-[#b8fd4b] text-white dark:text-[#3d5e00] flex items-center justify-center text-[11px] font-bold mt-0.5">
-                                {i + 1}
-                            </span>
-                            <p className="leading-relaxed text-[#2c302b] dark:text-[#e6ede6]">{step}</p>
-                        </li>
-                    ))}
-                </ol>
+                    {/* Tags */}
+                    {recipe.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                            {recipe.tags.map(tag => (
+                                <span
+                                    key={tag}
+                                    className={`tag-chip ${tag.toLowerCase() === 'thermomix' ? 'tag-chip-purple' : ''}`}
+                                >
+                                    {tag}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Ingredients */}
+                    <div>
+                        <h3 className="text-sm font-semibold text-[#2c302b] dark:text-[#e6ede6] mb-2.5 flex items-center gap-2">
+                            <ShoppingCart size={15} className="text-[#426500] dark:text-[#b8fd4b]" /> Zutaten
+                        </h3>
+                        <div className="grid grid-cols-2 gap-2">
+                            {recipe.ingredients.map((ing, i) => (
+                                <div key={i} className="text-sm bg-[#f5f7f0] dark:bg-[#1e2a1e] p-2.5 rounded-lg border border-[#e6e9e1] dark:border-[#2c3a2c]">
+                                    <span className="font-bold text-[#2c302b] dark:text-[#e6ede6]">{ing.amount} {ing.unit}</span>
+                                    <span className="text-[#595c57] dark:text-[#8a9089]"> {ing.name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right column: instructions */}
+                <div className="sm:w-1/2 mt-5 sm:mt-0 sm:border-l sm:border-[#e6e9e1] sm:dark:border-[#2c3a2c] sm:pl-6">
+                    <h3 className="text-sm font-semibold text-[#2c302b] dark:text-[#e6ede6] mb-2.5 flex items-center gap-2">
+                        <ChefHat size={15} className="text-[#426500] dark:text-[#b8fd4b]" /> Zubereitung
+                    </h3>
+                    <ol className="space-y-3">
+                        {recipe.instructions.map((step, i) => (
+                            <li key={i} className="flex gap-3 text-sm text-[#2c302b] dark:text-[#e6ede6]">
+                                <span className="shrink-0 w-6 h-6 rounded-full bg-[#426500] dark:bg-[#b8fd4b] text-white dark:text-[#3d5e00] flex items-center justify-center text-[11px] font-bold mt-0.5">
+                                    {i + 1}
+                                </span>
+                                <p className="leading-relaxed text-[#2c302b] dark:text-[#e6ede6]">{step}</p>
+                            </li>
+                        ))}
+                    </ol>
+                </div>
             </div>
         </div>
     </ModalShell>
@@ -1008,6 +1013,33 @@ export const ResetConfirmModal = ({
                     className="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors"
                 >
                     Löschen
+                </button>
+            </div>
+        </div>
+    </ModalShell>
+);
+
+export const RegenerateConfirmModal = ({
+    onConfirm, onCancel
+}: {
+    onConfirm: () => void;
+    onCancel: () => void;
+}) => (
+    <ModalShell onClose={onCancel} maxWidth="max-w-sm">
+        <div className="p-6 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="h-7 w-7 text-amber-500" />
+            </div>
+            <h3 className="font-sans text-xl font-bold text-[#2c302b] dark:text-[#e6ede6] mb-2">
+                Plan ersetzen?
+            </h3>
+            <p className="text-sm text-[#595c57] dark:text-[#8a9089] mb-6 leading-relaxed">
+                Für diese Woche existiert bereits ein Wochenplan. Die Rezepte des alten Plans werden automatisch ins Archiv verschoben.
+            </p>
+            <div className="flex gap-3">
+                <button onClick={onCancel} className="btn-ghost flex-1">Abbrechen</button>
+                <button onClick={onConfirm} className="btn-primary flex-1">
+                    Ja, neuen Plan erstellen
                 </button>
             </div>
         </div>
